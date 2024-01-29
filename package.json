@@ -1,0 +1,33 @@
+{
+  "name": "tt-commander-app",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Tiny Tapeout demo board command web app",
+  "main": "index.js",
+  "scripts": {
+    "start": "vite",
+    "build": "vite build"
+  },
+  "keywords": [
+    "Web Serial",
+    "Tiny Tapeout"
+  ],
+  "author": "Uri Shaked",
+  "license": "ISC",
+  "dependencies": {
+    "@suid/icons-material": "^0.6.11",
+    "@suid/material": "^0.15.1",
+    "solid-js": "^1.8.12"
+  },
+  "devDependencies": {
+    "@suid/vite-plugin": "^0.1.5",
+    "@types/dom-serial": "^1.0.6",
+    "@typescript-eslint/eslint-plugin": "^6.20.0",
+    "@typescript-eslint/parser": "^6.20.0",
+    "eslint": "^8.56.0",
+    "eslint-plugin-solid": "^0.13.1",
+    "prettier": "^3.2.4",
+    "vite": "^4.5.2",
+    "vite-plugin-solid": "^2.9.1"
+  }
+}
