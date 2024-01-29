@@ -3,7 +3,7 @@
 
 import { Button, MenuItem, Select, Stack, TextField, Typography } from '@suid/material';
 import { For, createSignal } from 'solid-js';
-import { TTBoardDevice, frequencyTable } from '~/ttboard/TTBoardDevice';
+import { TTBoardDevice, frequencyTable } from '~/ttcontrol/TTBoardDevice';
 import { DebugLogs } from './DebugLogs';
 
 export interface IBreakoutControlProps {

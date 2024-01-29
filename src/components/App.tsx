@@ -5,7 +5,7 @@
 
 import { AppBar, CssBaseline, Stack, ThemeProvider, Typography } from '@suid/material';
 import { Show, createSignal, onCleanup, onMount } from 'solid-js';
-import { TTBoardDevice } from '~/ttboard/TTBoardDevice';
+import { TTBoardDevice } from '~/ttcontrol/TTBoardDevice';
 import { theme } from '~/utils/theme';
 import { BoardCommander } from './BoardCommander';
 import { Footer } from './Footer';

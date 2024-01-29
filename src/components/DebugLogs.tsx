@@ -1,6 +1,6 @@
 import { List, ListItem } from '@suid/material';
 import { For, createEffect } from 'solid-js';
-import { ILogEntry } from '~/ttboard/TTBoardDevice';
+import { ILogEntry } from '~/ttcontrol/TTBoardDevice';
 
 export function DebugLogs(props: { logs: ILogEntry[] }) {
   let listRef: HTMLUListElement;

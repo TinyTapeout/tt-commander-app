@@ -3,7 +3,7 @@
 
 import { createStore } from 'solid-js/store';
 import { LineBreakTransformer } from '~/utils/LineBreakTransformer';
-import ttboardPy from './ttboard.py?raw';
+import ttControl from './ttcontrol.py?raw';
 
 export const frequencyTable = [
   { title: '50 MHz', value: '50000000' },
@@ -84,7 +84,7 @@ export class TTBoardDevice {
     this.writableStreamClosed = textEncoderStream.readable.pipeTo(this.port.writable);
     this.writer.write('\x03\x03'); // Send Ctrl+C twice to stop any running program.
     this.writer.write('\x01'); // Send Ctrl+A to enter RAW REPL mode.
-    this.writer.write(ttboardPy + '\x04'); // Send the demo.py script and excute it.
+    this.writer.write(ttControl + '\x04'); // Send the demo.py script and excute it.
     this.sendCommand('read_rom()');
   }
 
