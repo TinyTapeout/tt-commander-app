@@ -66,7 +66,11 @@ def read_rom():
     write_uo_out(0x00)
     magic = read_ui_in()
     if magic != 0x78: # "t" in 7-segment
-        print("shuttle=unknown") # TODO: detect tt03p5
+        try:
+            with open("rom_fallback.txt", "r") as f:
+                print(f.read())
+        except:
+            print("shuttle=unknown")
         return
     rom_data = ""
     for i in range(32, 128):
