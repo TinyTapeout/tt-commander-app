@@ -7,6 +7,12 @@ import math
 
 print(f"\nversion={sys.version.split(';')[1].strip()}")
 
+
+# GPIO mapping for TT demo board
+GPIO_PROJECT_CLK = 0
+# TODO: Add other relevant GPIOs
+
+
 def select_design(design):
    print(f"TODO: SELECT A DESIGN")
    print(f"design={design}")
@@ -14,19 +20,15 @@ def select_design(design):
 def set_clock_hz(hz, max_rp2040_freq=133_000_000):
     # Only support integer frequencies
     freq = int(hz)
-
-    print(f"Setting clock frequency to {freq} Hz")
+    print(f"freq_req={freq}")
 
     # Get best acheivable RP2040 clock rate for that rate
     rp2040_freq = _get_best_rp2040_freq(freq, max_rp2040_freq)
+    print(f"freq_rp2040={rp2040_freq}")
 
     # Apply the settings
     machine.freq(rp2040_freq)
-
-    # Clock pin is pin 0
-    pwm = machine.PWM(0)
-    pwm.freq(freq)
-    pwm.duty_u16(0x7fff)
+    machine.PWM(GPIO_PROJECT_CLK, freq=freq, duty_u16=0x7fff)
 
 # ROM format documented here: https://github.com/TinyTapeout/tt-chip-rom
 def read_rom():
@@ -82,6 +84,6 @@ def _get_best_rp2040_freq(freq, max_rp2040_freq):
         rp2040_freq = next_rp2040_freq
 
     if best_fracdiv >= 1.0/256:
-        print(f"Non-integer divisor will be used for the clock.  If you need to reduce jitter try {best_freq // best_div}")
+        print(f"freq_jitter_free={best_freq // best_div}")
 
     return best_freq
