@@ -13,38 +13,46 @@ GPIO_MUX_SEL = 1
 GPIO_CTRL_ENA = 6
 GPIO_CTRL_RST_N = 7
 GPIO_CTRL_INC = 8
+GPIO_UI_IN = [9, 10, 11, 12, 17, 18, 19, 20]
 
-GPIO_OUT = [3, 4, 7, 8, 13, 14, 15, 16]
-GPIO_IN = [9, 10, 11, 12, 17, 18, 19, 20]
+MUX_SEL_CTRL = 0
+MUX_SEL_OU_OUT = 1
 
 mux_sel = Pin(GPIO_MUX_SEL, Pin.OUT, value = 1)
 ctrl_ena = Pin(GPIO_CTRL_ENA, Pin.OUT, value = 0)
-ctrl_rst_n = Pin(GPIO_CTRL_RST_N, Pin.OUT, value = 1)
-ctrl_inc = Pin(GPIO_CTRL_INC, Pin.OUT, value = 0)
-ui_in = [Pin(pin, Pin.IN, Pin.PULL_DOWN) for pin in GPIO_IN]
-uo_out = [Pin(pin, Pin.OUT) for pin in GPIO_OUT]
+ctrl_rst_n = Pin(GPIO_CTRL_RST_N, Pin.IN) # Pulled-up by PCB
+ctrl_inc = Pin(GPIO_CTRL_INC, Pin.IN)     # Pulled-down by PCB
+ui_in = [Pin(pin, Pin.OUT) for pin in GPIO_UI_IN]
 
-def read_ui_in():
+# Some of the ou_out pins are multiplexed with the ctrl pins, so special care needed
+def _p(pin):
+    return Pin(pin, Pin.IN, Pin.PULL_DOWN)
+uo_out = [_p(3), _p(4), ctrl_rst_n, ctrl_inc, _p(13), _p(14), _p(15), _p(16)]
+
+def read_uo_out():
     data = 0
     for i in range(8):
-        data |= ui_in[i].value() << i
+        data |= uo_out[i].value() << i
     return data
 
-def write_uo_out(data):
+def write_ui_in(data):
     for i in range(8):
-        uo_out[i].value(data & 1)
+        ui_in[i].value(data & 1)
         data >>= 1
 
 def select_design(design):
-    mux_sel.value(0)
+    mux_sel.value(MUX_SEL_CTRL)
     ctrl_ena.value(0)
-    ctrl_rst_n.value(0)
+    ctrl_inc.init(Pin.OUT, value=0)
+    ctrl_rst_n.init(Pin.OUT, value=0) # reset ctrl
     ctrl_rst_n.value(1)
     for _ in range(design):
         ctrl_inc.value(1)
         ctrl_inc.value(0)
     ctrl_ena.value(1)
-    mux_sel.value(1)
+    ctrl_inc.init(Pin.IN)
+    ctrl_rst_n.init(Pin.IN)
+    mux_sel.value(MUX_SEL_OU_OUT)
     print(f"design={design}")
 
 def set_clock_hz(hz, max_rp2040_freq=133_000_000):
@@ -63,8 +71,8 @@ def set_clock_hz(hz, max_rp2040_freq=133_000_000):
 # ROM format documented here: https://github.com/TinyTapeout/tt-chip-rom
 def read_rom():
     select_design(0)
-    write_uo_out(0x00)
-    magic = read_ui_in()
+    write_ui_in(0x00)
+    magic = read_uo_out()
     if magic != 0x78: # "t" in 7-segment
         try:
             with open("rom_fallback.txt", "r") as f:
@@ -74,8 +82,8 @@ def read_rom():
         return
     rom_data = ""
     for i in range(32, 128):
-        write_uo_out(i)
-        byte = read_ui_in()
+        write_ui_in(i)
+        byte = read_uo_out()
         if byte == 0:
             break
         rom_data += chr(byte)
