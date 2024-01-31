@@ -58,6 +58,10 @@ export function App() {
             Configure your Tiny Tapeout Board
           </Typography>
 
+          <Typography variant="body1" color="text.secondary" gutterBottom>
+            For Tiny Tapeout boards with TT04 or a later chip.
+          </Typography>
+
           <Show when={!supported()}>
             <Stack mt={2}>
               <Typography variant="body1" color="error">
