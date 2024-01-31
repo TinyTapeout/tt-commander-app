@@ -18,16 +18,17 @@ GPIO_UI_IN = [9, 10, 11, 12, 17, 18, 19, 20]
 MUX_SEL_CTRL = 0
 MUX_SEL_OU_OUT = 1
 
-mux_sel = Pin(GPIO_MUX_SEL, Pin.OUT, value = 1)
-ctrl_ena = Pin(GPIO_CTRL_ENA, Pin.OUT, value = 0)
-ctrl_rst_n = Pin(GPIO_CTRL_RST_N, Pin.IN) # Pulled-up by PCB
-ctrl_inc = Pin(GPIO_CTRL_INC, Pin.IN)     # Pulled-down by PCB
+mux_sel = Pin(GPIO_MUX_SEL, Pin.OUT, value=1)
+ctrl_ena = Pin(GPIO_CTRL_ENA, Pin.OUT, value=0)
+ctrl_rst_n = Pin(GPIO_CTRL_RST_N, Pin.IN)  # Pulled-up by PCB
+ctrl_inc = Pin(GPIO_CTRL_INC, Pin.IN)  # Pulled-down by PCB
 ui_in = [Pin(pin, Pin.OUT) for pin in GPIO_UI_IN]
 
+
 # Some of the ou_out pins are multiplexed with the ctrl pins, so special care needed
-def _p(pin):
-    return Pin(pin, Pin.IN, Pin.PULL_DOWN)
+_p = lambda pin: Pin(pin, Pin.IN, Pin.PULL_DOWN)
 uo_out = [_p(3), _p(4), ctrl_rst_n, ctrl_inc, _p(13), _p(14), _p(15), _p(16)]
+
 
 def read_uo_out():
     data = 0
@@ -35,16 +36,18 @@ def read_uo_out():
         data |= uo_out[i].value() << i
     return data
 
+
 def write_ui_in(data):
     for i in range(8):
         ui_in[i].value(data & 1)
         data >>= 1
 
+
 def select_design(design):
     mux_sel.value(MUX_SEL_CTRL)
     ctrl_ena.value(0)
     ctrl_inc.init(Pin.OUT, value=0)
-    ctrl_rst_n.init(Pin.OUT, value=0) # reset ctrl
+    ctrl_rst_n.init(Pin.OUT, value=0)  # reset ctrl
     ctrl_rst_n.value(1)
     for _ in range(design):
         ctrl_inc.value(1)
@@ -54,6 +57,7 @@ def select_design(design):
     ctrl_rst_n.init(Pin.IN)
     mux_sel.value(MUX_SEL_OU_OUT)
     print(f"design={design}")
+
 
 def set_clock_hz(hz, max_rp2040_freq=133_000_000):
     # Only support integer frequencies
@@ -66,14 +70,15 @@ def set_clock_hz(hz, max_rp2040_freq=133_000_000):
 
     # Apply the settings
     machine.freq(rp2040_freq)
-    machine.PWM(GPIO_PROJECT_CLK, freq=freq, duty_u16=0x7fff)
+    machine.PWM(GPIO_PROJECT_CLK, freq=freq, duty_u16=0x7FFF)
+
 
 # ROM format documented here: https://github.com/TinyTapeout/tt-chip-rom
 def read_rom():
     select_design(0)
     write_ui_in(0x00)
     magic = read_uo_out()
-    if magic != 0x78: # "t" in 7-segment
+    if magic != 0x78:  # "t" in 7-segment
         try:
             with open("rom_fallback.txt", "r") as f:
                 print(f.read())
@@ -89,6 +94,7 @@ def read_rom():
         rom_data += chr(byte)
     print(rom_data)
 
+
 def _get_best_rp2040_freq(freq, max_rp2040_freq):
     # Scan the allowed RP2040 frequency range for a frequency
     # that will divide to the target frequency well
@@ -96,14 +102,14 @@ def _get_best_rp2040_freq(freq, max_rp2040_freq):
 
     if freq > max_rp2040_freq // 2:
         raise ValueError("Requested frequency too high")
-    if freq <= min_rp2040_freq // (2**24-1):
+    if freq <= min_rp2040_freq // (2**24 - 1):
         raise ValueError("Requested frequency too low")
 
     best_freq = 0
     best_fracdiv = 2000000000
     best_div = 0
 
-    rp2040_freq = min(max_rp2040_freq, freq * (2**24-1))
+    rp2040_freq = min(max_rp2040_freq, freq * (2**24 - 1))
     if rp2040_freq > 136_000_000:
         rp2040_freq = (rp2040_freq // 2_000_000) * 2_000_000
     else:
@@ -116,7 +122,9 @@ def _get_best_rp2040_freq(freq, max_rp2040_freq):
 
         # Work out the closest multiple of 2 divisor that could be used
         pwm_divisor = max((rp2040_freq // (2 * freq)) * 2, 2)
-        if abs(int(rp2040_freq / pwm_divisor + 0.5) - freq) > abs(int(rp2040_freq / (pwm_divisor + 2) + 0.5) - freq):
+        if abs(int(rp2040_freq / pwm_divisor + 0.5) - freq) > abs(
+            int(rp2040_freq / (pwm_divisor + 2) + 0.5) - freq
+        ):
             pwm_divisor += 2
 
         # Check if the target freq will be acheived
@@ -130,7 +138,7 @@ def _get_best_rp2040_freq(freq, max_rp2040_freq):
 
         rp2040_freq = next_rp2040_freq
 
-    if best_fracdiv >= 1.0/256:
+    if best_fracdiv >= 1.0 / 256:
         print(f"freq_jitter_free={best_freq // best_div}")
 
     return best_freq
