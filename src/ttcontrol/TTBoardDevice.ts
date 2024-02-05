@@ -9,12 +9,15 @@ export const frequencyTable = [
   { title: '50 MHz', value: '50000000' },
   { title: '48 MHz', value: '48000000' },
   { title: '40 MHz', value: '40000000' },
+  { title: '31.5 MHz', value: '31500000' },
   { title: '25.179 MHz', value: '25178571' },
+  { title: '25 MHz', value: '25000000' },
   { title: '24 MHz', value: '24000000' },
   { title: '20 MHz', value: '20000000' },
   { title: '12 MHz', value: '12000000' },
   { title: '10 MHz', value: '10000000' },
   { title: '1 MHz', value: '1000000' },
+  { title: '50 kHz', value: '50000' },
   { title: '10 kHz', value: '10000' },
 ];
 
