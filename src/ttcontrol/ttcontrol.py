@@ -22,7 +22,7 @@ mux_sel = Pin(GPIO_MUX_SEL, Pin.OUT, value=1)
 ctrl_ena = Pin(GPIO_CTRL_ENA, Pin.OUT, value=0)
 ctrl_rst_n = Pin(GPIO_CTRL_RST_N, Pin.IN)  # Pulled-up by PCB
 ctrl_inc = Pin(GPIO_CTRL_INC, Pin.IN)  # Pulled-down by PCB
-ui_in = [Pin(pin, Pin.OUT) for pin in GPIO_UI_IN]
+ui_in = [Pin(pin, Pin.IN) for pin in GPIO_UI_IN]
 
 
 # Some of the ou_out pins are multiplexed with the ctrl pins, so special care needed
@@ -35,6 +35,11 @@ def read_uo_out():
     for i in range(8):
         data |= uo_out[i].value() << i
     return data
+
+
+def enable_ui_in(enabled):
+    for pin in ui_in:
+        pin.init(Pin.OUT if enabled else Pin.IN)
 
 
 def write_ui_in(data):
@@ -75,24 +80,28 @@ def set_clock_hz(hz, max_rp2040_freq=133_000_000):
 
 # ROM format documented here: https://github.com/TinyTapeout/tt-chip-rom
 def read_rom():
-    select_design(0)
-    write_ui_in(0x00)
-    magic = read_uo_out()
-    if magic != 0x78:  # "t" in 7-segment
-        try:
-            with open("rom_fallback.txt", "r") as f:
-                print(f.read())
-        except:
-            print("shuttle=unknown")
-        return
-    rom_data = ""
-    for i in range(32, 128):
-        write_ui_in(i)
-        byte = read_uo_out()
-        if byte == 0:
-            break
-        rom_data += chr(byte)
-    print(rom_data)
+    try:
+        select_design(0)
+        enable_ui_in(True)
+        write_ui_in(0x00)
+        magic = read_uo_out()
+        if magic != 0x78:  # "t" in 7-segment
+            try:
+                with open("rom_fallback.txt", "r") as f:
+                    print(f.read())
+            except:
+                print("shuttle=unknown")
+            return
+        rom_data = ""
+        for i in range(32, 128):
+            write_ui_in(i)
+            byte = read_uo_out()
+            if byte == 0:
+                break
+            rom_data += chr(byte)
+        print(rom_data)
+    finally:
+        enable_ui_in(False)
 
 
 def _get_best_rp2040_freq(freq, max_rp2040_freq):
