@@ -1,7 +1,16 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright (C) 2024, Tiny Tapeout LTD
 
-import { Button, MenuItem, Select, Stack, TextField, Typography } from '@suid/material';
+import {
+  Button,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Stack,
+  TextField,
+  Typography,
+} from '@suid/material';
 import { For, createSignal } from 'solid-js';
 import { TTBoardDevice, frequencyTable } from '~/ttcontrol/TTBoardDevice';
 import { DebugLogs } from './DebugLogs';
@@ -40,8 +49,9 @@ export function BoardCommander(props: IBreakoutControlProps) {
         </Button>
       </Stack>
 
-      <Stack direction="row" spacing={1} marginTop={2} marginBottom={1} maxWidth={220}>
+      <Stack direction="row" spacing={1} marginTop={2} marginBottom={2}>
         <TextField
+          sx={{ maxWidth: 120 }}
           label="Active design"
           type="number"
           size="small"
@@ -54,19 +64,35 @@ export function BoardCommander(props: IBreakoutControlProps) {
         </Button>
       </Stack>
 
-      <Stack direction="row" spacing={1} marginBottom={1} maxWidth={220}>
-        <Select
-          label="Clock speed"
+      <Stack direction="row" spacing={1} marginBottom={1}>
+        <TextField
+          sx={{ maxWidth: 120 }}
+          label="Clock speed (Hz)"
           type="number"
           size="small"
           value={clockSpeed()}
           fullWidth
           onChange={(e) => setClockSpeed(e.target.value)}
-        >
-          <For each={frequencyTable}>
-            {(freq) => <MenuItem value={freq.value}>{freq.title}</MenuItem>}
-          </For>
-        </Select>
+        />
+
+        <FormControl sx={{ width: 120 }}>
+          <InputLabel id="frequency-select-label">Preset</InputLabel>
+
+          <Select
+            labelId="frequency-select-label"
+            label="Preset"
+            type="number"
+            size="small"
+            value={clockSpeed()}
+            fullWidth
+            onChange={(e) => e.target.value && setClockSpeed(e.target.value)}
+          >
+            <For each={frequencyTable}>
+              {(freq) => <MenuItem value={freq.value}>{freq.title}</MenuItem>}
+            </For>
+          </Select>
+        </FormControl>
+
         <Button onClick={setClock} variant="contained">
           Set
         </Button>
