@@ -1,12 +1,6 @@
-import {
-  FormControlLabel,
-  Stack,
-  Switch,
-  ToggleButton,
-  ToggleButtonGroup,
-  Typography,
-} from '@suid/material';
-import { createSignal, onCleanup, onMount } from 'solid-js';
+import { Checkbox, FormControlLabel, Stack, ToggleButton, ToggleButtonGroup } from '@suid/material';
+import { onCleanup, onMount } from 'solid-js';
+import { deviceState, updateDeviceState } from '~/model/DeviceState';
 import { TTBoardDevice } from '~/ttcontrol/TTBoardDevice';
 
 export interface IInteractPanelProps {
@@ -14,11 +8,8 @@ export interface IInteractPanelProps {
 }
 
 export function InteractPanel(props: IInteractPanelProps) {
-  const [enableIn, setEnableIn] = createSignal(false);
-  const [uiIn, setUiIn] = createSignal([] as string[]);
-
   const updateUiIn = () => {
-    const values = uiIn();
+    const values = deviceState.uiIn;
     let byte = 0;
     for (let i = 0; i < 8; i++) {
       if (values.includes(i.toString())) {
@@ -30,10 +21,10 @@ export function InteractPanel(props: IInteractPanelProps) {
 
   const handler = (event: KeyboardEvent) => {
     if (['0', '1', '2', '3', '4', '5', '6', '7'].includes(event.key)) {
-      if (uiIn().includes(event.key)) {
-        setUiIn(uiIn().filter((x) => x !== event.key));
+      if (deviceState.uiIn.includes(event.key)) {
+        updateDeviceState({ uiIn: deviceState.uiIn.filter((x) => x !== event.key) });
       } else {
-        setUiIn([...uiIn(), event.key]);
+        updateDeviceState({ uiIn: [...deviceState.uiIn, event.key] });
       }
       updateUiIn();
     }
@@ -49,28 +40,25 @@ export function InteractPanel(props: IInteractPanelProps) {
 
   return (
     <>
-      <Typography variant="h6" mt={1}>
-        ui_in
-      </Typography>
       <Stack direction="row" spacing={1} marginTop={2} marginBottom={2}>
         <FormControlLabel
           control={
-            <Switch
-              value={enableIn()}
+            <Checkbox
+              checked={deviceState.uiInEnabled}
               onChange={(event, value) => {
-                setEnableIn(value);
+                updateDeviceState({ uiInEnabled: value });
                 void props.device.enableUIIn(value);
               }}
             />
           }
-          label="Enable"
+          label="ui_in"
         />
         <ToggleButtonGroup
           color="primary"
-          disabled={!enableIn()}
-          value={uiIn()}
+          disabled={!deviceState.uiInEnabled}
+          value={deviceState.uiIn}
           onChange={(event, values) => {
-            setUiIn(values);
+            updateDeviceState({ uiIn: values });
             updateUiIn();
           }}
         >

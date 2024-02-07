@@ -8,20 +8,17 @@ import {
   TextField,
 } from '@suid/material';
 import { For } from 'solid-js';
+import { deviceState, updateDeviceState } from '~/model/DeviceState';
 import { loadProjects } from '~/model/Project';
 import { TTBoardDevice, frequencyTable } from '~/ttcontrol/TTBoardDevice';
-import { createSignal } from 'solid-js';
 
 export interface IBoardConfigPanelProps {
   device: TTBoardDevice;
 }
 
 export function BoardConfigPanel(props: IBoardConfigPanelProps) {
-  const [activeDesign, setActiveDesign] = createSignal<number>(0);
-  const [clockSpeed, setClockSpeed] = createSignal<string>('10000000');
-
   const setClock = () => {
-    void props.device.setClock(clockSpeed());
+    void props.device.setClock(deviceState.clockHz);
   };
 
   return (
@@ -35,9 +32,11 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
             label="Project"
             type="number"
             size="small"
-            value={activeDesign()}
+            value={deviceState.selectedDesign}
             fullWidth
-            onChange={(e) => e.target.value && setActiveDesign(e.target.value)}
+            onChange={(e) =>
+              e.target.value && updateDeviceState({ selectedDesign: e.target.value })
+            }
           >
             <For each={loadProjects()}>
               {(project) => (
@@ -54,11 +53,16 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
           label="Index"
           type="number"
           size="small"
-          value={activeDesign()}
+          value={deviceState.selectedDesign}
           fullWidth
-          onChange={(e) => setActiveDesign((e.target as HTMLInputElement).valueAsNumber)}
+          onChange={(e) =>
+            updateDeviceState({ selectedDesign: (e.target as HTMLInputElement).valueAsNumber })
+          }
         />
-        <Button onClick={() => props.device.selectDesign(activeDesign())} variant="contained">
+        <Button
+          onClick={() => props.device.selectDesign(deviceState.selectedDesign)}
+          variant="contained"
+        >
           Select
         </Button>
       </Stack>
@@ -69,9 +73,9 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
           label="Clock speed (Hz)"
           type="number"
           size="small"
-          value={clockSpeed()}
+          value={deviceState.clockHz}
           fullWidth
-          onChange={(e) => setClockSpeed(e.target.value)}
+          onChange={(e) => updateDeviceState({ clockHz: e.target.value })}
         />
 
         <FormControl sx={{ width: 120 }}>
@@ -82,9 +86,9 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
             label="Preset"
             type="number"
             size="small"
-            value={clockSpeed()}
+            value={deviceState.clockHz}
             fullWidth
-            onChange={(e) => e.target.value && setClockSpeed(e.target.value)}
+            onChange={(e) => e.target.value && updateDeviceState({ clockHz: e.target.value })}
           >
             <For each={frequencyTable}>
               {(freq) => <MenuItem value={freq.value}>{freq.title}</MenuItem>}
