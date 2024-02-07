@@ -12,6 +12,7 @@ import {
   Typography,
 } from '@suid/material';
 import { For, createSignal } from 'solid-js';
+import { loadProjects } from '~/model/Project';
 import { TTBoardDevice, frequencyTable } from '~/ttcontrol/TTBoardDevice';
 import { DebugLogs } from './DebugLogs';
 
@@ -50,9 +51,31 @@ export function BoardCommander(props: IBreakoutControlProps) {
       </Stack>
 
       <Stack direction="row" spacing={1} marginTop={2} marginBottom={2}>
+        <FormControl sx={{ width: 300 }}>
+          <InputLabel id="project-select-label">Project</InputLabel>
+
+          <Select
+            labelId="project-select-label"
+            label="Project"
+            type="number"
+            size="small"
+            value={activeDesign()}
+            fullWidth
+            onChange={(e) => e.target.value && setActiveDesign(e.target.value)}
+          >
+            <For each={loadProjects()}>
+              {(project) => (
+                <MenuItem value={project.address}>
+                  {project.title} ({project.address})
+                </MenuItem>
+              )}
+            </For>
+          </Select>
+        </FormControl>
+
         <TextField
-          sx={{ maxWidth: 120 }}
-          label="Active design"
+          sx={{ maxWidth: 80 }}
+          label="Index"
           type="number"
           size="small"
           value={activeDesign()}
