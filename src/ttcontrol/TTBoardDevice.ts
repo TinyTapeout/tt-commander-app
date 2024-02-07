@@ -63,6 +63,10 @@ export class TTBoardDevice {
     await this.sendCommand('import machine; machine.bootloader()');
   }
 
+  async enableUIIn(enable: boolean) {
+    await this.sendCommand(`enable_ui_in(${enable ? 'True' : 'False'})`);
+  }
+
   private processInput(line: string) {
     const [name, value] = line.split(/=(.+)/);
     if (name === 'firmware') {
