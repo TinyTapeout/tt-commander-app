@@ -7,13 +7,14 @@ import { TTBoardDevice } from '~/ttcontrol/TTBoardDevice';
 import { BoardConfigPanel } from './BoardConfigPanel';
 import { DebugLogs } from './DebugLogs';
 import { InteractPanel } from './InteractPanel';
+import { PinoutPanel } from './PinoutPanel';
 
 export interface IBreakoutControlProps {
   onDisconnect: () => void;
   device: TTBoardDevice;
 }
 
-type ITabName = 'config' | 'interact';
+type ITabName = 'config' | 'interact' | 'pinout';
 
 export function BoardCommander(props: IBreakoutControlProps) {
   const [activeTab, setActiveTab] = createSignal<ITabName>('config');
@@ -53,12 +54,21 @@ export function BoardCommander(props: IBreakoutControlProps) {
           >
             Interact
           </Button>
+          <Button
+            onClick={() => setActiveTab('pinout')}
+            variant={activeTab() === 'pinout' ? 'contained' : 'outlined'}
+          >
+            Pinout
+          </Button>
         </ButtonGroup>
         <Show when={activeTab() === 'config'}>
           <BoardConfigPanel device={props.device} />
         </Show>
         <Show when={activeTab() === 'interact'}>
           <InteractPanel device={props.device} />
+        </Show>
+        <Show when={activeTab() === 'pinout'}>
+          <PinoutPanel />
         </Show>
       </Paper>
 
