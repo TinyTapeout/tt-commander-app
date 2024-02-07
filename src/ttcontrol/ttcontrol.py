@@ -10,6 +10,7 @@ print(f"\nversion={sys.version.split(';')[1].strip()}")
 # GPIO mapping for TT demo board
 GPIO_PROJECT_CLK = 0
 GPIO_MUX_SEL = 1
+GPIO_PROJECT_RST_N = 5
 GPIO_CTRL_ENA = 6
 GPIO_CTRL_RST_N = 7
 GPIO_CTRL_INC = 8
@@ -18,6 +19,7 @@ GPIO_UI_IN = [9, 10, 11, 12, 17, 18, 19, 20]
 MUX_SEL_CTRL = 0
 MUX_SEL_OU_OUT = 1
 
+proj_rst_n = Pin(GPIO_PROJECT_RST_N, Pin.IN, Pin.PULL_UP)
 mux_sel = Pin(GPIO_MUX_SEL, Pin.OUT, value=1)
 ctrl_ena = Pin(GPIO_CTRL_ENA, Pin.OUT, value=0)
 ctrl_rst_n = Pin(GPIO_CTRL_RST_N, Pin.IN)  # Pulled-up by PCB
@@ -62,6 +64,12 @@ def select_design(design):
     ctrl_rst_n.init(Pin.IN)
     mux_sel.value(MUX_SEL_OU_OUT)
     print(f"design={design}")
+
+
+def reset_project():
+    proj_rst_n.init(Pin.OUT, value=0)
+    proj_rst_n.init(Pin.IN, Pin.PULL_UP)
+    print("reset_project=1")
 
 
 def set_clock_hz(hz, max_rp2040_freq=133_000_000):

@@ -1,4 +1,11 @@
-import { Checkbox, FormControlLabel, Stack, ToggleButton, ToggleButtonGroup } from '@suid/material';
+import {
+  Button,
+  Checkbox,
+  FormControlLabel,
+  Stack,
+  ToggleButton,
+  ToggleButtonGroup,
+} from '@suid/material';
 import { onCleanup, onMount } from 'solid-js';
 import { deviceState, updateDeviceState } from '~/model/DeviceState';
 import { TTBoardDevice } from '~/ttcontrol/TTBoardDevice';
@@ -27,6 +34,9 @@ export function InteractPanel(props: IInteractPanelProps) {
         updateDeviceState({ uiIn: [...deviceState.uiIn, event.key] });
       }
       updateUiIn();
+    }
+    if (event.key.toUpperCase() === 'R') {
+      props.device.resetProject();
     }
   };
 
@@ -71,6 +81,9 @@ export function InteractPanel(props: IInteractPanelProps) {
           <ToggleButton value="6">6</ToggleButton>
           <ToggleButton value="7">7</ToggleButton>
         </ToggleButtonGroup>
+      </Stack>
+      <Stack direction="row">
+        <Button onClick={() => props.device.resetProject()}>Reset (R)</Button>
       </Stack>
     </>
   );

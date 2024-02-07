@@ -67,6 +67,10 @@ export class TTBoardDevice {
     await this.sendCommand(`enable_ui_in(${enable ? 'True' : 'False'})`);
   }
 
+  async resetProject() {
+    await this.sendCommand('reset_project()');
+  }
+
   private processInput(line: string) {
     const [name, value] = line.split(/=(.+)/);
     if (name === 'firmware') {
