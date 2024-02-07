@@ -6,8 +6,9 @@ import {
   Select,
   Stack,
   TextField,
+  Typography,
 } from '@suid/material';
-import { For } from 'solid-js';
+import { For, Show } from 'solid-js';
 import { deviceState, updateDeviceState } from '~/model/DeviceState';
 import { loadProjects } from '~/model/Project';
 import { TTBoardDevice, frequencyTable } from '~/ttcontrol/TTBoardDevice';
@@ -19,6 +20,11 @@ export interface IBoardConfigPanelProps {
 export function BoardConfigPanel(props: IBoardConfigPanelProps) {
   const setClock = () => {
     void props.device.setClock(deviceState.clockHz);
+  };
+
+  const repo = () => {
+    const project = loadProjects().find((p) => p.address === deviceState.selectedDesign);
+    return project?.repo;
   };
 
   return (
@@ -100,6 +106,15 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
           Set
         </Button>
       </Stack>
+
+      <Show when={repo()}>
+        <Typography>
+          Repo:{' '}
+          <a href={repo()} target="_blank">
+            {repo()}
+          </a>
+        </Typography>
+      </Show>
     </>
   );
 }
