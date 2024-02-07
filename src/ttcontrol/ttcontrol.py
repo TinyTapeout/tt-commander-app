@@ -25,6 +25,7 @@ ctrl_ena = Pin(GPIO_CTRL_ENA, Pin.OUT, value=0)
 ctrl_rst_n = Pin(GPIO_CTRL_RST_N, Pin.IN)  # Pulled-up by PCB
 ctrl_inc = Pin(GPIO_CTRL_INC, Pin.IN)  # Pulled-down by PCB
 ui_in = [Pin(pin, Pin.IN) for pin in GPIO_UI_IN]
+current_pwm = None
 
 
 # Some of the ou_out pins are multiplexed with the ctrl pins, so special care needed
@@ -73,9 +74,17 @@ def reset_project():
 
 
 def set_clock_hz(hz, max_rp2040_freq=133_000_000):
+    global current_pwm
+
     # Only support integer frequencies
     freq = int(hz)
     print(f"freq_req={freq}")
+
+    if hz == 0:
+        if current_pwm:
+            current_pwm.deinit()
+            current_pwm = None
+        return
 
     # Get best acheivable RP2040 clock rate for that rate
     rp2040_freq = _get_best_rp2040_freq(freq, max_rp2040_freq)
@@ -83,7 +92,20 @@ def set_clock_hz(hz, max_rp2040_freq=133_000_000):
 
     # Apply the settings
     machine.freq(rp2040_freq)
-    machine.PWM(GPIO_PROJECT_CLK, freq=freq, duty_u16=0x7FFF)
+    current_pwm = machine.PWM(GPIO_PROJECT_CLK, freq=freq, duty_u16=0x7FFF)
+
+
+def manual_clock(cycles=1):
+    global current_pwm
+    if current_pwm:
+        current_pwm.deinit()
+        current_pwm = None
+
+    clk_pin = Pin(GPIO_PROJECT_CLK, Pin.OUT)
+    for _ in range(cycles):
+        clk_pin.value(0)
+        clk_pin.value(1)
+    print(f"clock_project={cycles}")
 
 
 # ROM format documented here: https://github.com/TinyTapeout/tt-chip-rom

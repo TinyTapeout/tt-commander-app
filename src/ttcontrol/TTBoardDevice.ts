@@ -71,6 +71,10 @@ export class TTBoardDevice {
     await this.sendCommand('reset_project()');
   }
 
+  async manualClock() {
+    await this.sendCommand('manual_clock()');
+  }
+
   private processInput(line: string) {
     const [name, value] = line.split(/=(.+)/);
     if (name === 'firmware') {

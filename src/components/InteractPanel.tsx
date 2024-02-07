@@ -35,8 +35,14 @@ export function InteractPanel(props: IInteractPanelProps) {
       }
       updateUiIn();
     }
-    if (event.key.toUpperCase() === 'R') {
-      props.device.resetProject();
+    switch (event.key.toUpperCase()) {
+      case 'C':
+        props.device.manualClock();
+        break;
+
+      case 'R':
+        props.device.resetProject();
+        break;
     }
   };
 
@@ -84,6 +90,7 @@ export function InteractPanel(props: IInteractPanelProps) {
       </Stack>
       <Stack direction="row">
         <Button onClick={() => props.device.resetProject()}>Reset (R)</Button>
+        <Button onClick={() => props.device.manualClock()}>Clock once (C)</Button>
       </Stack>
     </>
   );
