@@ -59,6 +59,10 @@ export class TTBoardDevice {
     await this.sendCommand(`set_clock_hz(${hz})`);
   }
 
+  async writeConfig(design: string, clock: string) {
+    await this.sendCommand(`write_config(r"${design}", ${clock})`);
+  }
+
   async bootloader() {
     await this.sendCommand('import machine; machine.bootloader()');
   }

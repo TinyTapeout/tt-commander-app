@@ -134,6 +134,14 @@ def read_rom():
         enable_ui_in(False)
 
 
+def write_config(default_project, clock):
+    config_content = f"[DEFAULT]\nproject={default_project}\n[{default_project}]\nclock_frequency={clock}\n"
+    with open("config.ini", "w") as f:
+        f.write(config_content)
+    for line in config_content.split("\n"):
+        print("config_line=", line)
+
+
 def _get_best_rp2040_freq(freq, max_rp2040_freq):
     # Scan the allowed RP2040 frequency range for a frequency
     # that will divide to the target frequency well

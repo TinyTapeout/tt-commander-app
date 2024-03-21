@@ -1,3 +1,4 @@
+import { Save } from '@suid/icons-material';
 import {
   Button,
   FormControl,
@@ -20,6 +21,14 @@ export interface IBoardConfigPanelProps {
 export function BoardConfigPanel(props: IBoardConfigPanelProps) {
   const setClock = () => {
     void props.device.setClock(deviceState.clockHz);
+  };
+
+  const writeConfigIni = () => {
+    const project = loadProjects().find((p) => p.address === deviceState.selectedDesign);
+    void props.device.writeConfig(
+      project?.macro ?? deviceState.selectedDesign.toString(),
+      deviceState.clockHz,
+    );
   };
 
   const repo = () => {
@@ -104,6 +113,12 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
 
         <Button onClick={setClock} variant="contained">
           Set
+        </Button>
+      </Stack>
+
+      <Stack alignItems="flex-start" my={1}>
+        <Button onClick={writeConfigIni} variant="contained" startIcon={<Save />}>
+          Persist config to board
         </Button>
       </Stack>
 
