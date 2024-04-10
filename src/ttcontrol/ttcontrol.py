@@ -10,7 +10,7 @@ print(f"\nversion={sys.version.split(';')[1].strip()}")
 # GPIO mapping for TT demo board
 GPIO_PROJECT_CLK = 0
 GPIO_MUX_SEL = 1
-GPIO_PROJECT_RST_N = 5
+GPIO_PROJECT_RST_N = 3
 GPIO_CTRL_ENA = 6
 GPIO_CTRL_RST_N = 7
 GPIO_CTRL_INC = 8
@@ -68,6 +68,7 @@ def select_design(design):
 
 
 def reset_project():
+    mux_sel.value(MUX_SEL_OU_OUT)
     proj_rst_n.init(Pin.OUT, value=0)
     proj_rst_n.init(Pin.IN, Pin.PULL_UP)
     print("reset_project=1")
