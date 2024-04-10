@@ -1,4 +1,4 @@
-import { Save } from '@suid/icons-material';
+import { PrecisionManufacturing, Save } from '@suid/icons-material';
 import {
   Button,
   FormControl,
@@ -19,6 +19,10 @@ export interface IBoardConfigPanelProps {
 }
 
 export function BoardConfigPanel(props: IBoardConfigPanelProps) {
+  const factoryMode = () => {
+    return new URL(location.href).searchParams.get('factory') == 'tt03p5';
+  };
+
   const setClock = () => {
     void props.device.setClock(deviceState.clockHz);
   };
@@ -116,10 +120,21 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
         </Button>
       </Stack>
 
-      <Stack alignItems="flex-start" my={1}>
+      <Stack my={1} direction="row" spacing={1}>
         <Button onClick={writeConfigIni} variant="contained" startIcon={<Save />}>
           Persist config to board
         </Button>
+
+        <Show when={factoryMode()}>
+          <Button
+            sx={{ backgroundColor: 'orange' }}
+            onClick={() => props.device.factorySetup()}
+            variant="outlined"
+            startIcon={<PrecisionManufacturing />}
+          >
+            Factory Test
+          </Button>
+        </Show>
       </Stack>
 
       <Show when={repo()}>

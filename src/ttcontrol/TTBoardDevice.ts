@@ -4,6 +4,7 @@
 import { createStore } from 'solid-js/store';
 import { LineBreakTransformer } from '~/utils/LineBreakTransformer';
 import ttControl from './ttcontrol.py?raw';
+import tt03p5Factory from './factory/tt03p5.py?raw';
 
 export const frequencyTable = [
   { title: '50 MHz', value: '50000000' },
@@ -61,6 +62,11 @@ export class TTBoardDevice {
 
   async writeConfig(design: string, clock: string) {
     await this.sendCommand(`write_config(r"${design}", ${clock})`);
+  }
+
+  async factorySetup() {
+    this.setData('logs', [...this.data.logs, { text: '<<< factory setup >>>', sent: true }]);
+    await this.writer?.write(tt03p5Factory + '\x04'); // Send the factory-tt03p5.py script and excute it.
   }
 
   async bootloader() {
