@@ -121,9 +121,11 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
       </Stack>
 
       <Stack my={1} direction="row" spacing={1}>
-        <Button onClick={writeConfigIni} variant="contained" startIcon={<Save />}>
-          Persist config to board
-        </Button>
+        <Show when={false}>
+          <Button onClick={writeConfigIni} variant="contained" startIcon={<Save />}>
+            Persist config to board
+          </Button>
+        </Show>
 
         <Show when={factoryMode()}>
           <Button
