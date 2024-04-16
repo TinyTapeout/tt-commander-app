@@ -2,11 +2,11 @@
 // Copyright (C) 2024, Tiny Tapeout LTD
 
 import { createStore } from 'solid-js/store';
-import { LineBreakTransformer } from '~/utils/LineBreakTransformer';
-import ttControl from './ttcontrol.py?raw';
-import tt03p5Factory from './factory/tt03p5.py?raw';
-import { loadShuttle } from '~/model/shuttle';
 import { isFactoryMode } from '~/model/factory';
+import { loadShuttle } from '~/model/shuttle';
+import { LineBreakTransformer } from '~/utils/LineBreakTransformer';
+import tt03p5Factory from './factory/tt03p5.py?raw';
+import ttControl from './ttcontrol.py?raw';
 
 export const frequencyTable = [
   { title: '50 MHz', value: '50000000' },
@@ -58,11 +58,11 @@ export class TTBoardDevice {
     await this.sendCommand(`select_design(${index})`);
   }
 
-  async setClock(hz: string) {
+  async setClock(hz: number) {
     await this.sendCommand(`set_clock_hz(${hz})`);
   }
 
-  async writeConfig(design: string, clock: string) {
+  async writeConfig(design: string, clock: number) {
     await this.sendCommand(`write_config(r"${design}", ${clock})`);
   }
 

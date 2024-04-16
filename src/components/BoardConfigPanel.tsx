@@ -27,6 +27,14 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
   const selectedProject = () =>
     shuttle.projects.find((p) => p.address === deviceState.selectedDesign);
 
+  const setSelectedAddress = (address: number) => {
+    updateDeviceState({ selectedDesign: address });
+    const project = shuttle.projects.find((p) => p.address === address);
+    if (project?.clock_hz) {
+      updateDeviceState({ clockHz: project.clock_hz });
+    }
+  };
+
   const writeConfigIni = () => {
     void props.device.writeConfig(
       selectedProject()?.macro ?? deviceState.selectedDesign.toString(),
@@ -54,7 +62,7 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
               value={deviceState.selectedDesign}
               fullWidth
               onChange={(e) =>
-                e.target.value && updateDeviceState({ selectedDesign: e.target.value })
+                typeof e.target.value === 'number' && setSelectedAddress(e.target.value)
               }
             >
               <For each={shuttle.projects}>
@@ -88,9 +96,7 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
           size="small"
           value={deviceState.selectedDesign}
           fullWidth
-          onChange={(e) =>
-            updateDeviceState({ selectedDesign: (e.target as HTMLInputElement).valueAsNumber })
-          }
+          onChange={(e) => setSelectedAddress((e.target as HTMLInputElement).valueAsNumber)}
         />
         <Button
           onClick={() => props.device.selectDesign(deviceState.selectedDesign)}
@@ -108,7 +114,9 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
           size="small"
           value={deviceState.clockHz}
           fullWidth
-          onChange={(e) => updateDeviceState({ clockHz: e.target.value })}
+          onChange={(e) =>
+            updateDeviceState({ clockHz: (e.target as HTMLInputElement).valueAsNumber })
+          }
         />
 
         <FormControl sx={{ width: 120 }}>
