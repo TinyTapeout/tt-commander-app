@@ -5,6 +5,8 @@ import { createStore } from 'solid-js/store';
 import { LineBreakTransformer } from '~/utils/LineBreakTransformer';
 import ttControl from './ttcontrol.py?raw';
 import tt03p5Factory from './factory/tt03p5.py?raw';
+import { loadShuttle } from '~/model/shuttle';
+import { isFactoryMode } from '~/model/factory';
 
 export const frequencyTable = [
   { title: '50 MHz', value: '50000000' },
@@ -95,6 +97,9 @@ export class TTBoardDevice {
     }
     if (name === 'shuttle') {
       this.setData('shuttle', value);
+      if (!isFactoryMode()) {
+        loadShuttle(value);
+      }
     }
     if (name === 'protocol' && value !== '1') {
       alert('Warning: unsupported protocol version.');

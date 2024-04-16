@@ -11,7 +11,8 @@ import {
 } from '@suid/material';
 import { For, Show } from 'solid-js';
 import { deviceState, updateDeviceState } from '~/model/DeviceState';
-import { loadProjects } from '~/model/Project';
+import { isFactoryMode } from '~/model/factory';
+import { shuttle } from '~/model/shuttle';
 import { TTBoardDevice, frequencyTable } from '~/ttcontrol/TTBoardDevice';
 
 export interface IBoardConfigPanelProps {
@@ -19,24 +20,22 @@ export interface IBoardConfigPanelProps {
 }
 
 export function BoardConfigPanel(props: IBoardConfigPanelProps) {
-  const factoryMode = () => {
-    return new URL(location.href).searchParams.get('factory') == 'tt03p5';
-  };
-
   const setClock = () => {
     void props.device.setClock(deviceState.clockHz);
   };
 
+  const selectedProject = () =>
+    shuttle.projects.find((p) => p.address === deviceState.selectedDesign);
+
   const writeConfigIni = () => {
-    const project = loadProjects().find((p) => p.address === deviceState.selectedDesign);
     void props.device.writeConfig(
-      project?.macro ?? deviceState.selectedDesign.toString(),
+      selectedProject()?.macro ?? deviceState.selectedDesign.toString(),
       deviceState.clockHz,
     );
   };
 
   const repo = () => {
-    const project = loadProjects().find((p) => p.address === deviceState.selectedDesign);
+    const project = shuttle.projects.find((p) => p.address === deviceState.selectedDesign);
     return project?.repo;
   };
 
@@ -46,25 +45,40 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
         <FormControl sx={{ width: 300 }}>
           <InputLabel id="project-select-label">Project</InputLabel>
 
-          <Select
-            labelId="project-select-label"
-            label="Project"
-            type="number"
-            size="small"
-            value={deviceState.selectedDesign}
-            fullWidth
-            onChange={(e) =>
-              e.target.value && updateDeviceState({ selectedDesign: e.target.value })
-            }
-          >
-            <For each={loadProjects()}>
-              {(project) => (
-                <MenuItem value={project.address}>
-                  {project.title} ({project.address})
-                </MenuItem>
-              )}
-            </For>
-          </Select>
+          <Show when={!shuttle.loading}>
+            <Select
+              labelId="project-select-label"
+              label="Project"
+              type="number"
+              size="small"
+              value={deviceState.selectedDesign}
+              fullWidth
+              onChange={(e) =>
+                e.target.value && updateDeviceState({ selectedDesign: e.target.value })
+              }
+            >
+              <For each={shuttle.projects}>
+                {(project) => (
+                  <MenuItem value={project.address}>
+                    {project.title} ({project.address})
+                  </MenuItem>
+                )}
+              </For>
+            </Select>
+          </Show>
+          <Show when={shuttle.loading}>
+            <Select
+              labelId="project-select-label"
+              label="Project"
+              type="number"
+              size="small"
+              value={0}
+              fullWidth
+              disabled
+            >
+              <MenuItem value={0}>Loading projects...</MenuItem>
+            </Select>
+          </Show>
         </FormControl>
 
         <TextField
@@ -127,7 +141,7 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
           </Button>
         </Show>
 
-        <Show when={factoryMode()}>
+        <Show when={isFactoryMode()}>
           <Button
             sx={{ backgroundColor: 'orange' }}
             onClick={() => props.device.factorySetup()}

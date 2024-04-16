@@ -10,12 +10,12 @@ import {
 import { For, Show, createResource } from 'solid-js';
 import YAML from 'yaml';
 import { deviceState } from '~/model/DeviceState';
-import { loadProjects } from '~/model/Project';
+import { shuttle } from '~/model/shuttle';
 import { extractRepoFromURL } from '~/utils/github';
 
 export function PinoutPanel() {
   const selectedProject = () =>
-    loadProjects().find((p) => p.address === deviceState.selectedDesign);
+    shuttle.projects.find((p) => p.address === deviceState.selectedDesign);
 
   const [infoYaml] = createResource(async () => {
     const project = selectedProject();
