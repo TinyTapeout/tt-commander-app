@@ -24,7 +24,7 @@ mux_sel = Pin(GPIO_MUX_SEL, Pin.OUT, value=1)
 ctrl_ena = Pin(GPIO_CTRL_ENA, Pin.OUT, value=0)
 ctrl_rst_n = Pin(GPIO_CTRL_RST_N, Pin.IN)  # Pulled-up by PCB
 ctrl_inc = Pin(GPIO_CTRL_INC, Pin.IN)  # Pulled-down by PCB
-ui_in = [Pin(pin, Pin.IN) for pin in GPIO_UI_IN]
+ui_in = [Pin(pin, Pin.IN, Pin.PULL_DOWN) for pin in GPIO_UI_IN]
 current_pwm = None
 
 
@@ -42,7 +42,7 @@ def read_uo_out():
 
 def enable_ui_in(enabled):
     for pin in ui_in:
-        pin.init(Pin.OUT if enabled else Pin.IN)
+        pin.init(Pin.OUT if enabled else Pin.IN, Pin.PULL_DOWN)
 
 
 def write_ui_in(data):
