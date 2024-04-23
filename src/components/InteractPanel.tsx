@@ -54,6 +54,13 @@ export function InteractPanel(props: IInteractPanelProps) {
     window.removeEventListener('keypress', handler);
   });
 
+  const uiButtonStyle = {
+    '&.MuiToggleButton-root.Mui-selected:not(.Mui-disabled)': {
+      backgroundColor: 'success.main',
+      color: 'white',
+    },
+  };
+
   return (
     <>
       <Stack direction="row" spacing={1} marginTop={2} marginBottom={2}>
@@ -78,14 +85,30 @@ export function InteractPanel(props: IInteractPanelProps) {
             updateUiIn();
           }}
         >
-          <ToggleButton value="0">0</ToggleButton>
-          <ToggleButton value="1">1</ToggleButton>
-          <ToggleButton value="2">2</ToggleButton>
-          <ToggleButton value="3">3</ToggleButton>
-          <ToggleButton value="4">4</ToggleButton>
-          <ToggleButton value="5">5</ToggleButton>
-          <ToggleButton value="6">6</ToggleButton>
-          <ToggleButton value="7">7</ToggleButton>
+          <ToggleButton value="0" sx={uiButtonStyle}>
+            0
+          </ToggleButton>
+          <ToggleButton value="1" sx={uiButtonStyle}>
+            1
+          </ToggleButton>
+          <ToggleButton value="2" sx={uiButtonStyle}>
+            2
+          </ToggleButton>
+          <ToggleButton value="3" sx={uiButtonStyle}>
+            3
+          </ToggleButton>
+          <ToggleButton value="4" sx={uiButtonStyle}>
+            4
+          </ToggleButton>
+          <ToggleButton value="5" sx={uiButtonStyle}>
+            5
+          </ToggleButton>
+          <ToggleButton value="6" sx={uiButtonStyle}>
+            6
+          </ToggleButton>
+          <ToggleButton value="7" sx={uiButtonStyle}>
+            7
+          </ToggleButton>
         </ToggleButtonGroup>
       </Stack>
       <Stack direction="row">
