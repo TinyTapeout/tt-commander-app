@@ -30,7 +30,7 @@ current_pwm = None
 
 # Some of the ou_out pins are multiplexed with the ctrl pins, so special care needed
 _p = lambda pin: Pin(pin, Pin.IN, Pin.PULL_DOWN)
-uo_out = [_p(3), _p(4), ctrl_rst_n, ctrl_inc, _p(13), _p(14), _p(15), _p(16)]
+uo_out = [_p(5), ctrl_ena, ctrl_rst_n, ctrl_inc, _p(13), _p(14), _p(15), _p(16)]
 
 
 def read_uo_out():
