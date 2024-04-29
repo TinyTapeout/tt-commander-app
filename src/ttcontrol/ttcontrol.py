@@ -15,6 +15,7 @@ GPIO_CTRL_ENA = 6
 GPIO_CTRL_RST_N = 7
 GPIO_CTRL_INC = 8
 GPIO_UI_IN = [9, 10, 11, 12, 17, 18, 19, 20]
+GPIO_UIO = [21, 22, 23, 24, 25, 26, 27, 28]
 
 MUX_SEL_CTRL = 0
 MUX_SEL_OU_OUT = 1
@@ -25,6 +26,7 @@ ctrl_ena = Pin(GPIO_CTRL_ENA, Pin.OUT, value=0)
 ctrl_rst_n = Pin(GPIO_CTRL_RST_N, Pin.IN)  # Pulled-up by PCB
 ctrl_inc = Pin(GPIO_CTRL_INC, Pin.IN)  # Pulled-down by PCB
 ui_in = [Pin(pin, Pin.IN, Pin.PULL_DOWN) for pin in GPIO_UI_IN]
+uio = [Pin(pin, Pin.IN, Pin.PULL_DOWN) for pin in GPIO_UIO]
 current_pwm = None
 
 
