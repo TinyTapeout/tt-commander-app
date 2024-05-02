@@ -2,10 +2,16 @@
 # Copyright (C) 2024, Tiny Tapeout LTD
 
 import sys
+import os
 import machine
 from machine import Pin
 
 print(f"\nversion={sys.version.split(';')[1].strip()}")
+try:
+    sdk_version = next(filter(lambda f: f.startswith("release_v"), os.listdir("/")))
+except:
+    sdk_version = "unknown"
+print(f"sdk={sdk_version}")
 
 # GPIO mapping for TT demo board
 GPIO_PROJECT_CLK = 0
