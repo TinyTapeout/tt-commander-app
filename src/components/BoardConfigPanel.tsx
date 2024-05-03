@@ -95,6 +95,7 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
           type="number"
           size="small"
           value={deviceState.selectedDesign}
+          InputProps={{ inputProps: { min: 0, max: 1023 } }}
           fullWidth
           onChange={(e) => setSelectedAddress((e.target as HTMLInputElement).valueAsNumber)}
         />
@@ -113,6 +114,7 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
           type="number"
           size="small"
           value={deviceState.clockHz}
+          InputProps={{ inputProps: { min: 0, max: 66500000 } }}
           fullWidth
           onChange={(e) =>
             updateDeviceState({ clockHz: (e.target as HTMLInputElement).valueAsNumber })
