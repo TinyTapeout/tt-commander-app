@@ -5,8 +5,8 @@ import { createStore } from 'solid-js/store';
 import { factoryShuttleId, isFactoryMode } from '~/model/factory';
 import { loadShuttle } from '~/model/shuttle';
 import { LineBreakTransformer } from '~/utils/LineBreakTransformer';
-import tt03p5Factory from './factory/tt03p5.py?raw';
 import defaultFactory from './factory/default.py?raw';
+import tt03p5Factory from './factory/tt03p5.py?raw';
 import ttControl from './ttcontrol.py?raw';
 
 export const frequencyTable = [
@@ -30,13 +30,17 @@ export interface ILogEntry {
   text: string;
 }
 
+export type TerminalListener = (data: string) => void;
+
 export class TTBoardDevice {
   private reader?: ReadableStreamDefaultReader<string>;
+  private terminalReader?: ReadableStreamDefaultReader<string>;
   private readableStreamClosed?: Promise<void>;
   private writableStreamClosed?: Promise<void>;
   private writer?: WritableStreamDefaultWriter<string>;
 
   readonly data;
+  private terminalListener: TerminalListener | null = null;
   private setData;
 
   constructor(readonly port: SerialPort) {
@@ -89,6 +93,21 @@ export class TTBoardDevice {
     await this.sendCommand('manual_clock()');
   }
 
+  async attachTerminal(listener: TerminalListener) {
+    this.writer?.write('\x02'); // Send Ctrl+B to exit RAW REPL mode.
+    this.terminalListener = listener;
+  }
+
+  async detachTerminal() {
+    this.terminalListener = null;
+    await this.writer?.write('\x03\x03'); // Send Ctrl+C twice to stop any running program.
+    await this.writer?.write('\x01'); // Send Ctrl+A to enter RAW REPL mode.
+  }
+
+  async terminalWrite(data: string) {
+    await this.writer?.write(data);
+  }
+
   private processInput(line: string) {
     const [name, value] = line.split(/=(.+)/);
     if (name === 'firmware') {
@@ -131,9 +150,13 @@ export class TTBoardDevice {
     while (port.readable) {
       const textDecoder = new TextDecoderStream();
       this.readableStreamClosed = port.readable.pipeTo(textDecoder.writable);
-      this.reader = textDecoder.readable
+      const [stream1, stream2] = textDecoder.readable.tee();
+      this.reader = stream1
         .pipeThrough(new TransformStream(new LineBreakTransformer()))
         .getReader();
+
+      this.terminalReader = stream2.getReader();
+      this.processTerminalStream(this.terminalReader);
 
       try {
         // eslint-disable-next-line no-constant-condition
@@ -143,7 +166,7 @@ export class TTBoardDevice {
             this.reader.releaseLock();
             return;
           }
-          if (value) {
+          if (value && !this.terminalListener) {
             const cleanValue = cleanupRawREPL(value);
             this.processInput(cleanValue);
             this.setData('logs', [...this.data.logs, { text: cleanValue, sent: false }]);
@@ -157,8 +180,25 @@ export class TTBoardDevice {
     }
   }
 
+  async processTerminalStream(reader: ReadableStreamDefaultReader<string>) {
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const { value, done } = await reader.read();
+      if (done) {
+        reader.releaseLock();
+        return;
+      }
+      if (value) {
+        if (this.terminalListener) {
+          this.terminalListener(value);
+        }
+      }
+    }
+  }
+
   async close() {
     await this.reader?.cancel();
+    await this.terminalReader?.cancel();
     await this.readableStreamClosed?.catch(() => {});
 
     await this.writer?.close();
