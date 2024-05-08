@@ -26,6 +26,7 @@ GPIO_UIO = [21, 22, 23, 24, 25, 26, 27, 28]
 MUX_SEL_CTRL = 0
 MUX_SEL_OU_OUT = 1
 
+clk_pin = Pin(GPIO_PROJECT_CLK, Pin.IN, Pin.PULL_DOWN)
 proj_rst_n = Pin(GPIO_PROJECT_RST_N, Pin.IN, Pin.PULL_UP)
 mux_sel = Pin(GPIO_MUX_SEL, Pin.OUT, value=1)
 ctrl_ena = Pin(GPIO_CTRL_ENA, Pin.OUT, value=0)
@@ -93,6 +94,7 @@ def set_clock_hz(hz, max_rp2040_freq=133_000_000):
         if current_pwm:
             current_pwm.deinit()
             current_pwm = None
+        clk_pin.init(Pin.IN, Pin.PULL_DOWN)
         return
 
     # Get best acheivable RP2040 clock rate for that rate
@@ -110,10 +112,11 @@ def manual_clock(cycles=1):
         current_pwm.deinit()
         current_pwm = None
 
-    clk_pin = Pin(GPIO_PROJECT_CLK, Pin.OUT)
     for _ in range(cycles):
-        clk_pin.value(0)
-        clk_pin.value(1)
+        clk_pin.init(Pin.OUT, value=1)
+        clk_pin.init(Pin.OUT, value=0)
+    clk_pin.init(Pin.IN, Pin.PULL_DOWN)
+
     print(f"clock_project={cycles}")
 
 
