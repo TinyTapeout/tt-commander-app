@@ -2,6 +2,7 @@ import { onCleanup, onMount } from 'solid-js';
 import { Terminal } from 'xterm';
 import 'xterm/css/xterm.css';
 import { TTBoardDevice } from '~/ttcontrol/TTBoardDevice';
+import { FitAddon } from '@xterm/addon-fit';
 
 export interface IReplPanelProps {
   device: TTBoardDevice;
@@ -13,6 +14,8 @@ export function ReplPanel(props: IReplPanelProps) {
 
   onMount(async () => {
     terminal = new Terminal({});
+    const fitAddon = new FitAddon();
+    terminal.loadAddon(fitAddon);
 
     // eslint-disable-next-line solid/reactivity
     const { device } = props;
@@ -25,6 +28,7 @@ export function ReplPanel(props: IReplPanelProps) {
 
     setTimeout(() => {
       terminal.open(ref);
+      fitAddon.fit();
       terminal.focus();
     });
 
