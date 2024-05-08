@@ -201,6 +201,12 @@ export class TTBoardDevice {
     await this.terminalReader?.cancel();
     await this.readableStreamClosed?.catch(() => {});
 
+    try {
+      await this.writer?.write('\x02\x03\x03'); // Exit RAW REPL mode and stop any running code.
+    } catch (e) {
+      console.warn('Failed to exit RAW REPL mode:', e);
+    }
+
     await this.writer?.close();
     await this.writableStreamClosed?.catch(() => {});
 
