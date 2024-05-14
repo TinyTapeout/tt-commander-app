@@ -1,29 +1,34 @@
+import time
+
+import ttboard.logging as logging
 from ttboard.demoboard import DemoBoard
 from ttboard.mode import RPMode
-import ttboard.logging as logging
+import ttboard.util.shuttle_tests as st
+
 log = logging.getLogger(__name__)
 
-def factory_test_rom_bits(tt:DemoBoard):
 
-    log.info(f'Testing ROM ui_in[7:0]')
+def factory_test_rom_data(tt: DemoBoard):
 
-    #tt.shuttle.tt_um_chip_rom.enable()
-    tt.mode = RPMode.ASIC_RP_CONTROL # make sure we're controlling everything
+    log.info(f"Testing ROM ui_in[7:0]")
+
+    tt.shuttle.reset_and_clock_mux(0)  # Switch to ROM project (index = 0)
+    tt.mode = RPMode.ASIC_RP_CONTROL  # make sure we're controlling everything
 
     expected = {
-        0: 0x78, # T in 7-segment
-        1: 0x78, # T in 7-segment
-        129: 0x0, # Empty
+        0: 0x78,  # T in 7-segment
+        1: 0x78,  # T in 7-segment
+        129: 0x0,  # Empty
     }
 
     for input, output in expected.items():
         tt.input_byte = input
         time.sleep_ms(1)
         if tt.output_byte != output:
-            log.warn(f'MISMATCH between expected byte {output} and output {tt.output_byte} at index {input}')
+            return f"MISMATCH between expected byte {output} and output {tt.output_byte} at index {input}"
 
     rom_data = ""
-    for i in range(32, 128):
+    for input in range(32, 128):
         tt.input_byte = input
         time.sleep_ms(1)
         byte = tt.output_byte
@@ -32,22 +37,28 @@ def factory_test_rom_bits(tt:DemoBoard):
         rom_data += chr(byte)
     print(f"ROM data: {rom_data}")
 
-    assert "shuttle=" in rom_data
-    assert "repo=tinytapeout/" in rom_data
+    if "shuttle=" not in rom_data:
+        return "ROM data does not contain shuttle information"
+    if "repo=tinytapeout/" not in rom_data.lower():
+        return "ROM data does not contain repo information"
 
-    return True
+    return None
+
 
 tt = DemoBoard.get()
-err = factory_test_rom_bits(tt)
-
 okay = True
 
+
+err = factory_test_rom_data(tt)
 if err is not None:
-    print(f"error=factory_test_clocking, {err}")
+    print(f"error=factory_test_rom_data, {err}")
     okay = False
 
-
-# TODO: bidir test through factory test project
+if okay:
+    err = st.factory_test_clocking(tt, read_bidirs=True)
+    if err is not None:
+        print(f"error=factory_test_clocking, {err}")
+        okay = False
 
 if okay:
     print("factory_test=OK")
