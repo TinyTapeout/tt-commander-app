@@ -4,6 +4,7 @@ import ttboard.logging as logging
 from ttboard.demoboard import DemoBoard
 from ttboard.mode import RPMode
 import ttboard.util.shuttle_tests as st
+from machine import Pin
 
 log = logging.getLogger(__name__)
 
@@ -48,17 +49,20 @@ def factory_test_rom_data(tt: DemoBoard):
 tt = DemoBoard.get()
 okay = True
 
-
-err = factory_test_rom_data(tt)
-if err is not None:
-    print(f"error=factory_test_rom_data, {err}")
-    okay = False
-
-if okay:
-    err = st.factory_test_clocking(tt, read_bidirs=True)
+try:
+    err = factory_test_rom_data(tt)
     if err is not None:
-        print(f"error=factory_test_clocking, {err}")
+        print(f"error=factory_test_rom_data, {err}")
         okay = False
+
+    if okay:
+        err = st.factory_test_clocking(tt, read_bidirs=True)
+        if err is not None:
+            print(f"error=factory_test_clocking, {err}")
+            okay = False
+finally:
+    enable_ui_in(False)
+    proj_rst_n.init(Pin.IN, Pin.PULL_UP)
 
 if okay:
     print("factory_test=OK")
