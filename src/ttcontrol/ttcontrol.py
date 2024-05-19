@@ -70,6 +70,7 @@ def select_design(design):
         ctrl_inc.value(1)
         ctrl_inc.value(0)
     ctrl_ena.value(1)
+    ctrl_ena.init(Pin.IN)
     ctrl_inc.init(Pin.IN)
     ctrl_rst_n.init(Pin.IN)
     mux_sel.value(MUX_SEL_OU_OUT)
