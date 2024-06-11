@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 // Copyright (C) 2024, Tiny Tapeout LTD
 
-import { Button, ButtonGroup, Paper, Stack, Typography } from '@suid/material';
+import { Button, ButtonGroup, Link, Paper, Stack, Typography } from '@suid/material';
 import { Show, createSignal } from 'solid-js';
 import { TTBoardDevice } from '~/ttcontrol/TTBoardDevice';
 import { BoardConfigPanel } from './BoardConfigPanel';
@@ -25,12 +25,28 @@ export function BoardCommander(props: IBreakoutControlProps) {
     props.onDisconnect();
   };
 
+  const shuttleId = () => props.device.data.shuttle;
+  const shuttleUrl = () => {
+    const id = shuttleId();
+    if (id?.startsWith('tt') && id.length === 4) {
+      return `https://tinytapeout.com/${id}`;
+    }
+  };
+
   return (
     <Stack mt={2}>
       <Stack direction="row" spacing={1} marginBottom={2} alignItems="center">
         <Stack flex={1} marginRight={1}>
           <Typography>
-            Shuttle: <strong>{props.device.data.shuttle ?? '<unknown>'}</strong>
+            Shuttle:{' '}
+            <Show when={shuttleUrl()}>
+              <Link href={shuttleUrl()} target="_blank" rel="noopener noreferrer">
+                <strong>{shuttleId()}</strong>
+              </Link>
+            </Show>
+            <Show when={!shuttleUrl()}>
+              <strong>{shuttleId() ?? '<unknown>'}</strong>
+            </Show>
           </Typography>
           <Typography>
             Firmware: <strong>{props.device.data.version ?? '<unknown>'}</strong>
