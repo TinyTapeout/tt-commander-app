@@ -1,8 +1,9 @@
+import { Stack, Typography } from '@suid/material';
+import { FitAddon } from '@xterm/addon-fit';
 import { onCleanup, onMount } from 'solid-js';
 import { Terminal } from 'xterm';
 import 'xterm/css/xterm.css';
 import { TTBoardDevice } from '~/ttcontrol/TTBoardDevice';
-import { FitAddon } from '@xterm/addon-fit';
 
 export interface IReplPanelProps {
   device: TTBoardDevice;
@@ -37,5 +38,13 @@ export function ReplPanel(props: IReplPanelProps) {
     });
   });
 
-  return <div ref={ref!} />;
+  return (
+    <Stack>
+      <div ref={ref!} />
+      <Typography marginTop={0.5}>
+        REPL tip: use <strong>Ctrl+E</strong> to enter paste mode, <strong>Ctrl+Shift+V</strong> to
+        paste.
+      </Typography>
+    </Stack>
+  );
 }
