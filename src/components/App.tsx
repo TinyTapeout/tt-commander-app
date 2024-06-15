@@ -3,12 +3,13 @@
 
 /// <reference types="dom-serial" />
 
-import { AppBar, CssBaseline, Stack, ThemeProvider, Typography } from '@suid/material';
+import { CssBaseline, Stack, ThemeProvider, Typography } from '@suid/material';
 import { Show, createSignal, onCleanup, onMount } from 'solid-js';
 import { TTBoardDevice } from '~/ttcontrol/TTBoardDevice';
 import { theme } from '~/utils/theme';
 import { BoardCommander } from './BoardCommander';
 import { Footer } from './Footer';
+import { Header } from './Header';
 import { LoadingButton } from './LoadingButton';
 
 export function App() {
@@ -47,11 +48,7 @@ export function App() {
       <CssBaseline enableColorScheme />
 
       <Stack component="main" maxWidth="100vw" minHeight="100vh" alignItems="center">
-        <AppBar position="static" sx={{ padding: 1 }}>
-          <Typography variant="h6" component="div">
-            Tiny Tapeout Commander
-          </Typography>
-        </AppBar>
+        <Header />
 
         <Stack maxWidth="100%" width={600} flex="1" py={2}>
           <Typography variant="h6" component="div">
