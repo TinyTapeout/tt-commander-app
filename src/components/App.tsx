@@ -26,6 +26,7 @@ export function App() {
       });
       await port.open({ baudRate: 115200 });
       const device = new TTBoardDevice(port);
+      device.addEventListener('close', () => setBreakoutDevice(null));
       setBreakoutDevice(device);
       void device.start();
     } catch (e) {
@@ -81,11 +82,7 @@ export function App() {
             </Stack>
           </Show>
 
-          <Show when={breakoutDevice()}>
-            {(device) => (
-              <BoardCommander device={device()} onDisconnect={() => setBreakoutDevice(null)} />
-            )}
-          </Show>
+          <Show when={breakoutDevice()}>{(device) => <BoardCommander device={device()} />}</Show>
         </Stack>
 
         <Footer />

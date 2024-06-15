@@ -11,7 +11,6 @@ import { PinoutPanel } from './PinoutPanel';
 import { ReplPanel } from './ReplPanel';
 
 export interface IBreakoutControlProps {
-  onDisconnect: () => void;
   device: TTBoardDevice;
 }
 
@@ -22,7 +21,6 @@ export function BoardCommander(props: IBreakoutControlProps) {
 
   const disconnect = () => {
     props.device.close();
-    props.onDisconnect();
   };
 
   const shuttleId = () => props.device.data.shuttle;

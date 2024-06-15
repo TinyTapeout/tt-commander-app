@@ -32,7 +32,7 @@ export interface ILogEntry {
 
 export type TerminalListener = (data: string) => void;
 
-export class TTBoardDevice {
+export class TTBoardDevice extends EventTarget {
   private reader?: ReadableStreamDefaultReader<string>;
   private terminalReader?: ReadableStreamDefaultReader<string>;
   private readableStreamClosed?: Promise<void>;
@@ -44,6 +44,7 @@ export class TTBoardDevice {
   private setData;
 
   constructor(readonly port: SerialPort) {
+    super();
     const [data, setData] = createStore({
       deviceName: null as string | null,
       version: null as string | null,
@@ -174,6 +175,7 @@ export class TTBoardDevice {
         }
       } catch (error) {
         console.error('SerialReader error:', error);
+        this.dispatchEvent(new Event('close'));
       } finally {
         this.reader.releaseLock();
       }
@@ -211,5 +213,6 @@ export class TTBoardDevice {
     await this.writableStreamClosed?.catch(() => {});
 
     await this.port.close();
+    this.dispatchEvent(new Event('close'));
   }
 }
