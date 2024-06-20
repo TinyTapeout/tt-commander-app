@@ -44,7 +44,9 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
 
   const repo = () => {
     const project = shuttle.projects.find((p) => p.address === deviceState.selectedDesign);
-    return project?.repo;
+    return project
+      ? { url: project.repo, commitUrl: `${project.repo}/tree/${project.commit}` }
+      : null;
   };
 
   return (
@@ -170,12 +172,14 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
       </Stack>
 
       <Show when={repo()}>
-        <Typography>
-          Repo:{' '}
-          <a href={repo()} target="_blank">
-            {repo()}
-          </a>
-        </Typography>
+        {(repo) => (
+          <Typography>
+            Repo:{' '}
+            <a href={repo().commitUrl} target="_blank">
+              {repo().url}
+            </a>
+          </Typography>
+        )}
       </Show>
     </>
   );
