@@ -86,6 +86,10 @@ export class TTBoardDevice extends EventTarget {
     await this.sendCommand(`enable_ui_in(${enable ? 'True' : 'False'})`);
   }
 
+  async writeUIIn(value: number) {
+    await this.sendCommand(`write_ui_in(0b${value.toString(2).padStart(8, '0')})`);
+  }
+
   async resetProject() {
     await this.sendCommand('reset_project()');
   }

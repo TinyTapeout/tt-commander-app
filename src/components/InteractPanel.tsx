@@ -17,13 +17,13 @@ export interface IInteractPanelProps {
 export function InteractPanel(props: IInteractPanelProps) {
   const updateUiIn = () => {
     const values = deviceState.uiIn;
-    let byte = 0;
+    let uiIn = 0;
     for (let i = 0; i < 8; i++) {
       if (values.includes(i.toString())) {
-        byte |= 1 << i;
+        uiIn |= 1 << i;
       }
     }
-    void props.device.sendCommand(`write_ui_in(0b${byte.toString(2).padStart(8, '0')})`);
+    void props.device.writeUIIn(uiIn);
   };
 
   const handler = (event: KeyboardEvent) => {
