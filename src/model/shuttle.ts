@@ -9,6 +9,7 @@ export interface Project {
   macro: string;
   address: number;
   title: string;
+  author: string;
   repo: string;
   commit: string;
   clock_hz: number;
@@ -28,7 +29,7 @@ export async function loadShuttle(id: string) {
   });
   try {
     const request = await fetch(
-      `https://index.tinytapeout.com/${id}.json?fields=title,repo,address,macro,clock_hz,commit`,
+      `https://index.tinytapeout.com/${id}.json?fields=title,author,repo,address,macro,clock_hz,commit`,
     );
     const shuttleIndex: { projects: Project[] } = await request.json();
     shuttleIndex.projects.sort((a, b) => a.title.localeCompare(b.title));

@@ -14,6 +14,7 @@ import { deviceState, updateDeviceState } from '~/model/DeviceState';
 import { isFactoryMode } from '~/model/factory';
 import { shuttle } from '~/model/shuttle';
 import { TTBoardDevice, frequencyTable } from '~/ttcontrol/TTBoardDevice';
+import { ProjectSelect } from './ProjectSelect';
 
 export interface IBoardConfigPanelProps {
   device: TTBoardDevice;
@@ -56,25 +57,11 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
           <InputLabel id="project-select-label">Project</InputLabel>
 
           <Show when={!shuttle.loading}>
-            <Select
-              labelId="project-select-label"
-              label="Project"
-              type="number"
-              size="small"
-              value={deviceState.selectedDesign}
-              fullWidth
-              onChange={(e) =>
-                typeof e.target.value === 'number' && setSelectedAddress(e.target.value)
-              }
-            >
-              <For each={shuttle.projects}>
-                {(project) => (
-                  <MenuItem value={project.address}>
-                    {project.title} ({project.address})
-                  </MenuItem>
-                )}
-              </For>
-            </Select>
+            <ProjectSelect
+              projects={shuttle.projects}
+              selectedAddr={deviceState.selectedDesign}
+              onSelect={setSelectedAddress}
+            />
           </Show>
           <Show when={shuttle.loading}>
             <Select
