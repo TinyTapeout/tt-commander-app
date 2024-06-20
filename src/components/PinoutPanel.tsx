@@ -72,8 +72,8 @@ export function PinoutPanel() {
               {(pinIndex) => (
                 <TableRow>
                   <TableCell>{pinIndex}</TableCell>
-                  <TableCell>{projectInfo()?.pinout[`ui_in[${pinIndex}]`] ?? ''}</TableCell>
-                  <TableCell>{projectInfo()?.pinout[`uo_out[${pinIndex}]`] ?? ''}</TableCell>
+                  <TableCell>{projectInfo()?.pinout[`ui[${pinIndex}]`] ?? ''}</TableCell>
+                  <TableCell>{projectInfo()?.pinout[`uo[${pinIndex}]`] ?? ''}</TableCell>
                   <TableCell>{projectInfo()?.pinout[`uio[${pinIndex}]`]}</TableCell>
                 </TableRow>
               )}
