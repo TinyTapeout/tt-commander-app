@@ -100,7 +100,13 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
           onChange={(e) => setSelectedAddress((e.target as HTMLInputElement).valueAsNumber)}
         />
         <Button
-          onClick={() => props.device.selectDesign(deviceState.selectedDesign)}
+          onClick={() => {
+            if (deviceState.uiIn.length > 0) {
+              void props.device.writeUIIn(0);
+              updateDeviceState({ uiIn: [] });
+            }
+            props.device.selectDesign(deviceState.selectedDesign);
+          }}
           variant="contained"
         >
           Select
