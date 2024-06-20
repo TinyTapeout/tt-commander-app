@@ -145,7 +145,7 @@ export class TTBoardDevice extends EventTarget {
 
     function cleanupRawREPL(value: string) {
       // eslint-disable-next-line no-control-regex
-      return value.replace(/^\x04+>OK\x04*/, '');
+      return value.replace(/^(\x04+>OK)+\x04*/, '');
     }
 
     while (port.readable) {
