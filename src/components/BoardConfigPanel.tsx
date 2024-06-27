@@ -54,8 +54,6 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
     <>
       <Stack direction="row" spacing={1} marginTop={2} marginBottom={2}>
         <FormControl sx={{ width: 300 }}>
-          <InputLabel id="project-select-label">Project</InputLabel>
-
           <Show when={!shuttle.loading}>
             <ProjectSelect
               projects={shuttle.projects}
@@ -64,6 +62,7 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
             />
           </Show>
           <Show when={shuttle.loading}>
+            <InputLabel id="project-select-label">Project</InputLabel>
             <Select
               labelId="project-select-label"
               label="Project"
