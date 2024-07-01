@@ -3,6 +3,7 @@
 
 import sys
 import os
+import rp2
 import machine
 from machine import Pin
 
@@ -35,6 +36,7 @@ ctrl_inc = Pin(GPIO_CTRL_INC, Pin.IN)  # Pulled-down by PCB
 ui_in = [Pin(pin, Pin.IN, Pin.PULL_DOWN) for pin in GPIO_UI_IN]
 uio = [Pin(pin, Pin.IN, Pin.PULL_DOWN) for pin in GPIO_UIO]
 current_pwm = None
+current_pio = None
 
 
 # Some of the ou_out pins are multiplexed with the ctrl pins, so special care needed
@@ -85,18 +87,24 @@ def reset_project():
 
 
 def set_clock_hz(hz, max_rp2040_freq=133_000_000):
-    global current_pwm
+    global current_pwm, current_pio
 
     # Only support integer frequencies
     freq = int(hz)
     print(f"freq_req={freq}")
 
-    if hz == 0:
+    if hz < 3:
         if current_pwm:
             current_pwm.deinit()
             current_pwm = None
-        clk_pin.init(Pin.IN, Pin.PULL_DOWN)
+        if hz > 0:
+            _generate_pio_clock(hz)
+        else:
+            _stop_pio_clock()
+            clk_pin.init(Pin.IN, Pin.PULL_DOWN)
         return
+
+    _stop_pio_clock()
 
     # Get best acheivable RP2040 clock rate for that rate
     rp2040_freq = _get_best_rp2040_freq(freq, max_rp2040_freq)
@@ -153,6 +161,43 @@ def write_config(default_project, clock):
         f.write(config_content)
     for line in config_content.split("\n"):
         print("config_line=", line)
+
+
+@rp2.asm_pio(set_init=rp2.PIO.OUT_HIGH)
+def _pio_toggle_pin():
+    wrap_target()
+    set(pins, 1)
+    mov(y, osr)
+    label("delay1")
+    jmp(y_dec, "delay1")  # Delay
+    set(pins, 0)
+    mov(y, osr)
+    label("delay2")
+    jmp(y_dec, "delay2")  # Delay
+    wrap()
+
+
+def _generate_pio_clock(hz: int):
+    global current_pio
+    machine.freq(100_000_000)
+    if not current_pio:
+        current_pio = rp2.StateMachine(
+            0,
+            _pio_toggle_pin,
+            freq=2000,
+            set_base=Pin(GPIO_PROJECT_CLK),
+        )
+    # Set the delay: 1000 cycles per hz minus 2 cycles for the set/mov instructions
+    current_pio.put(int(500 * (2 / hz) - 2))
+    current_pio.exec("pull()")
+    current_pio.active(1)
+
+
+def _stop_pio_clock():
+    global current_pio
+    if current_pio:
+        current_pio.active(0)
+    current_pio = None
 
 
 def _get_best_rp2040_freq(freq, max_rp2040_freq):
