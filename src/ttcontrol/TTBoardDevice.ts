@@ -132,16 +132,16 @@ export class TTBoardDevice extends EventTarget {
     }
   }
 
-  start() {
+  async start() {
     void this.run();
 
     const textEncoderStream = new TextEncoderStream();
     this.writer = textEncoderStream.writable.getWriter();
     this.writableStreamClosed = textEncoderStream.readable.pipeTo(this.port.writable);
-    this.writer.write('\x03\x03'); // Send Ctrl+C twice to stop any running program.
-    this.writer.write('\x01'); // Send Ctrl+A to enter RAW REPL mode.
-    this.writer.write(ttControl + '\x04'); // Send the demo.py script and excute it.
-    this.sendCommand('read_rom()');
+    await this.writer.write('\x03\x03'); // Send Ctrl+C twice to stop any running program.
+    await this.writer.write('\x01'); // Send Ctrl+A to enter RAW REPL mode.
+    await this.writer.write(ttControl + '\x04'); // Send the demo.py script and execute it.
+    await this.sendCommand('read_rom()');
   }
 
   private async run() {
