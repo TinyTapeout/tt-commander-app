@@ -1,4 +1,4 @@
-import { PrecisionManufacturing, Save } from '@suid/icons-material';
+import { FactCheck, PrecisionManufacturing, Save } from '@suid/icons-material';
 import {
   Button,
   FormControl,
@@ -48,6 +48,13 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
     return project
       ? { url: project.repo, commitUrl: `${project.repo}/tree/${project.commit}` }
       : null;
+  };
+
+  const reportFeedbackUrl = () => {
+    const project = selectedProject();
+    if (project) {
+      return `https://app.tinytapeout.com/shuttles/${shuttle.id}/${project.macro}/feedback`;
+    }
   };
 
   return (
@@ -166,6 +173,21 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
             </a>
           </Typography>
         )}
+      </Show>
+
+      <Show when={reportFeedbackUrl()}>
+        <Stack my={1} direction="row" spacing={1}>
+          <Button
+            component="a"
+            sx={{ backgroundColor: 'yellow' }}
+            href={reportFeedbackUrl()}
+            target="_blank"
+            variant="outlined"
+            startIcon={<FactCheck />}
+          >
+            Report results
+          </Button>
+        </Stack>
       </Show>
     </>
   );
