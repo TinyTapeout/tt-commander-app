@@ -1,15 +1,19 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (C) 2024, Uri Shaked
 
+import binascii
+import gc
+import sys
+import time
+
+import micropython
+from machine import SoftSPI
 from ttboard.demoboard import DemoBoard
 from ttboard.mode import RPMode
-from machine import SoftSPI
-import binascii
-import time
 
 
 class SPIFlash:
-    PAGE_SIZE = const(256)
+    PAGE_SIZE = micropython.const(256)
 
     def __init__(self, tt):
         self.tt = tt
@@ -18,7 +22,7 @@ class SPIFlash:
             mosi=tt.bidirs[1].raw_pin,
             miso=tt.bidirs[2].raw_pin,
         )
-        self.spi.init(baudrate=1_000_000, polarity=1, phase=1)
+        self.spi.init(baudrate=8_000_000, polarity=1, phase=1)
         self.cs = tt.bidirs[6].raw_pin
         self.cs.init(self.cs.OUT, value=1)
 
@@ -83,14 +87,33 @@ class SPIFlash:
             self.program_page(page_address + page_offset, chunk)
             offset += chunk_size
 
-    def program_base64(self, address, data_b64, verify=True):
-        data = binascii.a2b_base64(data_b64)
-        self.program(address, data)
-        if verify:
-            read_data = self.read_data(address, len(data))
-            if read_data != data:
-                raise RuntimeError("Verification failed")
-        print(f"flash_prog={hex(address)}")
+    def program_sectors(self, start_address, verify=True):
+        addr = start_address
+        print(f"flash_prog={addr:X}")
+        gc.collect()
+        try:
+            micropython.kbd_intr(-1)  # Disable Ctrl-C
+            while True:
+                line = sys.stdin.buffer.readline()
+                if not line:
+                    break
+                chunk_length = int(line.strip())
+                if chunk_length == 0:
+                    break
+                chunk_data = sys.stdin.buffer.read(chunk_length)
+                end_address = addr + len(chunk_data)
+                for erase_addr in range(addr, end_address, self.PAGE_SIZE):
+                    self.erase_sector(erase_addr)
+                self.program(addr, chunk_data)
+                if verify:
+                    read_back_data = self.read_data(addr, len(chunk_data))
+                    if read_back_data != chunk_data:
+                        raise RuntimeError("Verification failed")
+                addr += len(chunk_data)
+                print(f"flash_prog={addr:X}")
+        finally:
+            micropython.kbd_intr(3)
+        print(f"flash_prog=ok")
 
     def read_data(self, address, length):
         self.wait_not_busy()
