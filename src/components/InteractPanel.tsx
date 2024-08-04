@@ -16,7 +16,7 @@ export interface IInteractPanelProps {
 }
 
 export function InteractPanel(props: IInteractPanelProps) {
-  const [momentaryMode, setMomentaryMode] = createSignal(true);
+  const [momentaryMode, setMomentaryMode] = createSignal(false);
 
   const updateUiIn = () => {
     const values = deviceState.uiIn;
