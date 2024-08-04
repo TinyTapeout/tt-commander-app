@@ -6,15 +6,18 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from '@suid/material';
-import { onCleanup, onMount } from 'solid-js';
+import { createSignal, onCleanup, onMount } from 'solid-js';
 import { deviceState, updateDeviceState } from '~/model/DeviceState';
 import { TTBoardDevice } from '~/ttcontrol/TTBoardDevice';
+import { InteractSettingsMenu } from './InteractSettingsMenu';
 
 export interface IInteractPanelProps {
   device: TTBoardDevice;
 }
 
 export function InteractPanel(props: IInteractPanelProps) {
+  const [momentaryMode, setMomentaryMode] = createSignal(true);
+
   const updateUiIn = () => {
     const values = deviceState.uiIn;
     let uiIn = 0;
@@ -26,8 +29,18 @@ export function InteractPanel(props: IInteractPanelProps) {
     void props.device.writeUIIn(uiIn);
   };
 
-  const handler = (event: KeyboardEvent) => {
-    if (['0', '1', '2', '3', '4', '5', '6', '7'].includes(event.key)) {
+  const toggleUIInBit = (index: string) => {
+    if (deviceState.uiIn.includes(index.toString())) {
+      updateDeviceState({ uiIn: deviceState.uiIn.filter((x) => x !== index.toString()) });
+    } else {
+      updateDeviceState({ uiIn: [...deviceState.uiIn, index.toString()] });
+    }
+    updateUiIn();
+  };
+
+  const keypressHandler = (event: KeyboardEvent) => {
+    const handleUiIn = deviceState.uiInEnabled && !momentaryMode();
+    if (handleUiIn && ['0', '1', '2', '3', '4', '5', '6', '7'].includes(event.key)) {
       if (deviceState.uiIn.includes(event.key)) {
         updateDeviceState({ uiIn: deviceState.uiIn.filter((x) => x !== event.key) });
       } else {
@@ -46,12 +59,33 @@ export function InteractPanel(props: IInteractPanelProps) {
     }
   };
 
+  const downUpHandler = (event: KeyboardEvent) => {
+    if (!momentaryMode() || event.repeat || !deviceState.uiInEnabled) {
+      return;
+    }
+    if (['0', '1', '2', '3', '4', '5', '6', '7'].includes(event.key)) {
+      toggleUIInBit(event.key);
+      updateUiIn();
+    }
+  };
+
+  const pointerDownUpHandler = (event: PointerEvent) => {
+    if (momentaryMode() !== event.shiftKey) {
+      toggleUIInBit((event.target as HTMLButtonElement).value);
+      updateUiIn();
+    }
+  };
+
   onMount(() => {
-    window.addEventListener('keypress', handler);
+    window.addEventListener('keypress', keypressHandler);
+    window.addEventListener('keydown', downUpHandler);
+    window.addEventListener('keyup', downUpHandler);
   });
 
   onCleanup(() => {
-    window.removeEventListener('keypress', handler);
+    window.removeEventListener('keypress', keypressHandler);
+    window.removeEventListener('keydown', downUpHandler);
+    window.removeEventListener('keyup', downUpHandler);
   });
 
   const uiButtonStyle = {
@@ -81,9 +115,13 @@ export function InteractPanel(props: IInteractPanelProps) {
           disabled={!deviceState.uiInEnabled}
           value={deviceState.uiIn}
           onChange={(event, values) => {
-            updateDeviceState({ uiIn: values });
-            updateUiIn();
+            if (momentaryMode() == event.shiftKey) {
+              updateDeviceState({ uiIn: values });
+              updateUiIn();
+            }
           }}
+          onPointerDown={pointerDownUpHandler}
+          onPointerUp={pointerDownUpHandler}
         >
           <ToggleButton value="0" sx={uiButtonStyle}>
             0
@@ -110,6 +148,7 @@ export function InteractPanel(props: IInteractPanelProps) {
             7
           </ToggleButton>
         </ToggleButtonGroup>
+        <InteractSettingsMenu momentaryMode={momentaryMode()} setMomentaryMode={setMomentaryMode} />
       </Stack>
       <Stack direction="row">
         <Button onClick={() => props.device.resetProject()}>Reset (R)</Button>
