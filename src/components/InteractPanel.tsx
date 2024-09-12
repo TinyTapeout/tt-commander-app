@@ -18,7 +18,7 @@ export interface IInteractPanelProps {
 export function InteractPanel(props: IInteractPanelProps) {
   const [momentaryMode, setMomentaryMode] = createSignal(false);
 
-  const updateUiIn = () => {
+  const updateUiIn = async (setEnableToTrue = false) => {
     const values = deviceState.uiIn;
     let uiIn = 0;
     for (let i = 0; i < 8; i++) {
@@ -27,6 +27,9 @@ export function InteractPanel(props: IInteractPanelProps) {
       }
     }
     void props.device.writeUIIn(uiIn);
+    if (setEnableToTrue) {
+      await props.device.enableUIIn(true);
+    }
   };
 
   const toggleUIInBit = (index: string) => {
@@ -104,7 +107,11 @@ export function InteractPanel(props: IInteractPanelProps) {
               checked={deviceState.uiInEnabled}
               onChange={(event, value) => {
                 updateDeviceState({ uiInEnabled: value });
-                void props.device.enableUIIn(value);
+                if (value) {
+                  void updateUiIn(true);
+                } else {
+                  void props.device.enableUIIn(false);
+                }
               }}
             />
           }
