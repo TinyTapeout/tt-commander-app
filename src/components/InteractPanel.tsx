@@ -26,7 +26,7 @@ export function InteractPanel(props: IInteractPanelProps) {
         uiIn |= 1 << i;
       }
     }
-    void props.device.writeUIIn(uiIn);
+    await props.device.writeUIIn(uiIn);
     if (setEnableToTrue) {
       await props.device.enableUIIn(true);
     }
