@@ -16,32 +16,25 @@ print(f"sdk={sdk_version}")
 
 # GPIO mapping for TT demo board
 GPIO_PROJECT_CLK = 0
-GPIO_MUX_SEL = 1
-GPIO_PROJECT_RST_N = 3
-GPIO_CTRL_ENA = 6
-GPIO_CTRL_RST_N = 7
-GPIO_CTRL_INC = 8
+GPIO_PROJECT_RST_N = 1
+GPIO_CTRL_ENA = 4
+GPIO_CTRL_RST_N = 2
+GPIO_CTRL_INC = 3
 GPIO_UI_IN = [9, 10, 11, 12, 17, 18, 19, 20]
 GPIO_UIO = [21, 22, 23, 24, 25, 26, 27, 28]
-
-MUX_SEL_CTRL = 0
-MUX_SEL_OU_OUT = 1
+GPIO_UO_OUT = [5, 6, 7, 8, 13, 14, 15, 16]
 
 clk_pin = Pin(GPIO_PROJECT_CLK, Pin.IN, Pin.PULL_DOWN)
 proj_rst_n = Pin(GPIO_PROJECT_RST_N, Pin.IN, Pin.PULL_UP)
-mux_sel = Pin(GPIO_MUX_SEL, Pin.OUT, value=1)
 ctrl_ena = Pin(GPIO_CTRL_ENA, Pin.OUT, value=0)
 ctrl_rst_n = Pin(GPIO_CTRL_RST_N, Pin.IN)  # Pulled-up by PCB
 ctrl_inc = Pin(GPIO_CTRL_INC, Pin.IN)  # Pulled-down by PCB
 ui_in = [Pin(pin, Pin.IN, Pin.PULL_DOWN) for pin in GPIO_UI_IN]
 uio = [Pin(pin, Pin.IN, Pin.PULL_DOWN) for pin in GPIO_UIO]
+uo_out = [Pin(pin, Pin.IN, Pin.PULL_DOWN) for pin in GPIO_UO_OUT]
+
 current_pwm = None
 current_pio = None
-
-
-# Some of the ou_out pins are multiplexed with the ctrl pins, so special care needed
-_p = lambda pin: Pin(pin, Pin.IN, Pin.PULL_DOWN)
-uo_out = [_p(5), ctrl_ena, ctrl_rst_n, ctrl_inc, _p(13), _p(14), _p(15), _p(16)]
 
 
 def read_uo_out():
@@ -63,7 +56,6 @@ def write_ui_in(data):
 
 
 def select_design(design):
-    mux_sel.value(MUX_SEL_CTRL)
     ctrl_ena.value(0)
     ctrl_inc.init(Pin.OUT, value=0)
     ctrl_rst_n.init(Pin.OUT, value=0)  # reset ctrl
@@ -75,12 +67,10 @@ def select_design(design):
     ctrl_ena.init(Pin.IN)
     ctrl_inc.init(Pin.IN)
     ctrl_rst_n.init(Pin.IN)
-    mux_sel.value(MUX_SEL_OU_OUT)
     print(f"design={design}")
 
 
 def reset_project():
-    mux_sel.value(MUX_SEL_OU_OUT)
     proj_rst_n.init(Pin.OUT, value=0)
     proj_rst_n.init(Pin.IN, Pin.PULL_UP)
     print("reset_project=1")
