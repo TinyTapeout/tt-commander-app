@@ -57,16 +57,13 @@ def write_ui_in(data):
 
 def select_design(design):
     ctrl_ena.value(0)
-    ctrl_inc.init(Pin.OUT, value=0)
-    ctrl_rst_n.init(Pin.OUT, value=0)  # reset ctrl
+    ctrl_inc.value(0)
+    ctrl_rst_n.value(0)
     ctrl_rst_n.value(1)
     for _ in range(design):
         ctrl_inc.value(1)
         ctrl_inc.value(0)
     ctrl_ena.value(1)
-    ctrl_ena.init(Pin.IN)
-    ctrl_inc.init(Pin.IN)
-    ctrl_rst_n.init(Pin.IN)
     print(f"design={design}")
 
 
