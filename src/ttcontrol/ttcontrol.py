@@ -27,8 +27,8 @@ GPIO_UO_OUT = [5, 6, 7, 8, 13, 14, 15, 16]
 clk_pin = Pin(GPIO_PROJECT_CLK, Pin.IN, Pin.PULL_DOWN)
 proj_rst_n = Pin(GPIO_PROJECT_RST_N, Pin.IN, Pin.PULL_UP)
 ctrl_ena = Pin(GPIO_CTRL_ENA, Pin.OUT, value=0)
-ctrl_rst_n = Pin(GPIO_CTRL_RST_N, Pin.IN)  # Pulled-up by PCB
-ctrl_inc = Pin(GPIO_CTRL_INC, Pin.IN)  # Pulled-down by PCB
+ctrl_rst_n = Pin(GPIO_CTRL_RST_N, Pin.OUT, value=1)
+ctrl_inc = Pin(GPIO_CTRL_INC, Pin.OUT, value=0)
 ui_in = [Pin(pin, Pin.IN, Pin.PULL_DOWN) for pin in GPIO_UI_IN]
 uio = [Pin(pin, Pin.IN, Pin.PULL_DOWN) for pin in GPIO_UIO]
 uo_out = [Pin(pin, Pin.IN, Pin.PULL_DOWN) for pin in GPIO_UO_OUT]
