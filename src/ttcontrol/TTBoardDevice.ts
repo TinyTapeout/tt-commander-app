@@ -150,7 +150,12 @@ export class TTBoardDevice extends EventTarget {
     this.writableStreamClosed = textEncoderStream.readable.pipeTo(this.port.writable);
     await this.writer.write('\x03\x03'); // Send Ctrl+C twice to stop any running program.
     await this.writer.write('\x01'); // Send Ctrl+A to enter RAW REPL mode.
-    await this.writeChunked(ttControl + '\x04'); // Send the demo.py script and execute it.
+    const chunkSize = parseInt(
+      new URL(window.location.href).searchParams.get('chunkSize') || '1024',
+      10,
+    );
+    console.log('Write ttControl.py, chunk size', chunkSize);
+    await this.writeChunked(ttControl + '\x04', chunkSize); // Send the demo.py script and execute it.
     await this.sendCommand('read_rom()');
   }
 
