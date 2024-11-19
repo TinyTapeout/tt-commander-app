@@ -3,12 +3,6 @@
 
 import sys
 import os
-import rp2
-import machine
-from machine import Pin
-
-from ttboard.demoboard import DemoBoard
-from ttboard.mode import RPMode
 
 
 def report(dictOrKey: dict, val: str = None):
@@ -26,6 +20,10 @@ try:
 except:
     sdk_version = "unknown"
 report("sdk", sdk_version)
+
+
+from ttboard.demoboard import DemoBoard
+from ttboard.mode import RPMode
 
 
 def read_uo_out():
@@ -64,7 +62,7 @@ def reset_project():
     report("reset_project", 1)
 
 
-def set_clock_hz(hz, max_rp2040_freq=133_000_000):
+def set_clock_hz(hz):
     tt = DemoBoard.get()
     if hz > 0:
         tt.clock_project_PWM(hz)
@@ -72,7 +70,7 @@ def set_clock_hz(hz, max_rp2040_freq=133_000_000):
     else:
         tt.clock_project_stop()
         reportfreq = 0
-    report("freq_rp2040", reportfreq)
+    report("frequency", reportfreq)
 
 
 def manual_clock(cycles=1):
@@ -86,6 +84,7 @@ def manual_clock(cycles=1):
 
 # ROM format documented here: https://github.com/TinyTapeout/tt-chip-rom
 def read_rom():
+    tt = DemoBoard.get()
     shuttle = tt.chip_ROM.shuttle
     if shuttle is None or not len(shuttle):
         shuttle = "unknown"
@@ -94,11 +93,3 @@ def read_rom():
         report(tt.chip_ROM.contents)
     else:
         report({"shuttle": shuttle, "repo": "SHUTTLE OVERRIDE"})
-
-
-def write_config(default_project, clock):
-    config_content = f"[DEFAULT]\nproject={default_project}\n[{default_project}]\nclock_frequency={clock}\n"
-    with open("config.ini", "w") as f:
-        f.write(config_content)
-    for line in config_content.split("\n"):
-        print("config_line=", line)
