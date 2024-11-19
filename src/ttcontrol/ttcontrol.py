@@ -45,8 +45,9 @@ def reset_project():
 
 
 def set_clock_hz(hz, max_rp2040_freq=133_000_000):
-    pwm = DemoBoard.get().clock_project_PWM(hz)
-    print(f"freq_rp2040={pwm.freq()}")
+    tt = DemoBoard.get()
+    tt.clock_project_PWM(hz)
+    print(f"freq_rp2040={tt.project_clock.freq()}")
 
 
 def manual_clock(cycles=1):
