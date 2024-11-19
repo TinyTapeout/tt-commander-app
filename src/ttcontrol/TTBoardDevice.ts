@@ -55,6 +55,16 @@ export class TTBoardDevice extends EventTarget {
     this.setData = setData;
   }
 
+  /**
+   * Writing too much data at once can cause MicroPython to hang. We empirically determined that
+   * writing in chunks of 1024 bytes works well.
+   */
+  async writeChunked(data: string, chunkSize: number = 1024) {
+    for (let i = 0; i < data.length; i += chunkSize) {
+      await this.writer?.write(data.slice(i, i + chunkSize));
+    }
+  }
+
   async sendCommand(command: string) {
     this.setData('logs', [...this.data.logs, { text: command, sent: true }]);
     await this.writer?.write(`${command}\x04`);
@@ -140,7 +150,7 @@ export class TTBoardDevice extends EventTarget {
     this.writableStreamClosed = textEncoderStream.readable.pipeTo(this.port.writable);
     await this.writer.write('\x03\x03'); // Send Ctrl+C twice to stop any running program.
     await this.writer.write('\x01'); // Send Ctrl+A to enter RAW REPL mode.
-    await this.writer.write(ttControl + '\x04'); // Send the demo.py script and execute it.
+    await this.writeChunked(ttControl + '\x04'); // Send the demo.py script and execute it.
     await this.sendCommand('read_rom()');
   }
 
