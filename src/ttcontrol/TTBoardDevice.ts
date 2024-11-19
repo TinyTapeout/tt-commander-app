@@ -148,8 +148,15 @@ export class TTBoardDevice extends EventTarget {
     const { port } = this;
 
     function cleanupRawREPL(value: string) {
-      // eslint-disable-next-line no-control-regex
-      return value.replace(/^(\x04+>OK)+\x04*/, '');
+      /* eslint-disable no-control-regex */
+      return (
+        value
+          // Remove the OK responses:
+          .replace(/^(\x04+>OK)+\x04*/, '')
+          // Remove ANSI escape codes:
+          .replace(/\x1b\[[0-9;]*[a-zA-Z]/g, '')
+      );
+      /* eslint-enable no-control-regex */
     }
 
     while (port.readable) {
