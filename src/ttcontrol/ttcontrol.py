@@ -94,7 +94,10 @@ def read_rom():
     if shuttle is None or not len(shuttle):
         shuttle = 'unknown'
     
-    report('shuttle', shuttle)
+    if hasattr(tt.chip_ROM, 'contents'):
+        report(tt.chip_ROM.contents)
+    else:
+        report({'shuttle':shuttle, 'repo':'SHUTTLE OVERRIDE'})
 
 
 def write_config(default_project, clock):
