@@ -1,8 +1,8 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (C) 2024, Tiny Tapeout LTD
 
-import sys
 import os
+import sys
 
 
 def report(dict_or_key: dict, val: str = None):
@@ -89,3 +89,14 @@ def read_rom():
         report(tt.chip_ROM.contents)
     else:
         report({"shuttle": shuttle, "repo": "SHUTTLE OVERRIDE"})
+
+
+def run_factory_test():
+    import ttboard.util.shuttle_tests as st
+
+    tt = DemoBoard.get()
+    err = st.factory_test_clocking(tt, read_bidirs=True)
+    if err is not None:
+        print(f"error=factory_test_clocking, {err}")
+    else:
+        print("factory_test=OK")

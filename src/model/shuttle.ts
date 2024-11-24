@@ -3,7 +3,6 @@
 // Author: Uri Shaked
 
 import { createStore } from 'solid-js/store';
-import { factoryShuttleId } from './factory';
 
 export interface Project {
   macro: string;
@@ -37,9 +36,4 @@ export async function loadShuttle(id: string) {
   } finally {
     updateShuttle({ loading: false });
   }
-}
-
-const factoryModeShuttle = factoryShuttleId();
-if (factoryModeShuttle) {
-  loadShuttle(factoryModeShuttle);
 }

@@ -2,11 +2,8 @@
 // Copyright (C) 2024, Tiny Tapeout LTD
 
 import { createStore } from 'solid-js/store';
-import { factoryShuttleId, isFactoryMode } from '~/model/factory';
 import { loadShuttle } from '~/model/shuttle';
 import { LineBreakTransformer } from '~/utils/LineBreakTransformer';
-import defaultFactory from './factory/default.py?raw';
-import tt03p5Factory from './factory/tt03p5.py?raw';
 import ttControl from './ttcontrol.py?raw';
 
 export const frequencyTable = [
@@ -73,8 +70,7 @@ export class TTBoardDevice extends EventTarget {
 
   async factorySetup() {
     this.setData('logs', [...this.data.logs, { text: '<<< factory setup >>>', sent: true }]);
-    const script = factoryShuttleId() == 'tt03p5' ? tt03p5Factory : defaultFactory;
-    await this.writer?.write(script + '\x04'); // Send the factory-tt03p5.py script and excute it.
+    await this.sendCommand('run_factory_test()');
   }
 
   async bootloader() {
@@ -121,9 +117,7 @@ export class TTBoardDevice extends EventTarget {
 
       case 'shuttle':
         this.setData('shuttle', value);
-        if (!isFactoryMode()) {
-          loadShuttle(value);
-        }
+        loadShuttle(value);
         break;
     }
   }
