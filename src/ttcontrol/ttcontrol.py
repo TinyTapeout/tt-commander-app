@@ -5,29 +5,25 @@ import sys
 import os
 
 
-def report(dictOrKey: dict, val: str = None):
-    if val is not None and not isinstance(dictOrKey, dict):
-        dictOrKey = {dictOrKey: val}
+def report(dict_or_key: dict, val: str = None):
+    if val is not None and not isinstance(dict_or_key, dict):
+        dict_or_key = {dict_or_key: val}
 
-    strs = list(map(lambda x: f"{x[0]}={x[1]}", dictOrKey.items()))
+    strs = list(map(lambda x: f"{x[0]}={x[1]}", dict_or_key.items()))
     print("\n".join(strs))
 
 
 print()
-report("version", sys.version.split(";")[1].strip())
+report("sys.version", sys.version.split(";")[1].strip())
 try:
     sdk_version = next(filter(lambda f: f.startswith("release_v"), os.listdir("/")))
 except:
     sdk_version = "unknown"
-report("sdk", sdk_version)
+report("tt.sdk_version", sdk_version)
 
 
 from ttboard.demoboard import DemoBoard
 from ttboard.mode import RPMode
-
-
-def read_uo_out():
-    return DemoBoard.get().output_byte
 
 
 def enable_ui_in(enabled):
@@ -37,11 +33,11 @@ def enable_ui_in(enabled):
     else:
         tt.mode = RPMode.ASIC_MANUAL_INPUTS
 
-    report("mode", tt.mode_str)
+    report("tt.mode", tt.mode_str)
 
 
 def write_ui_in(data):
-    DemoBoard.get().input_byte = data
+    DemoBoard.get().ui_in.value = data
 
 
 def select_design(design):
@@ -49,9 +45,9 @@ def select_design(design):
     tt.shuttle[design].enable()
     hz = 0
     if tt.is_auto_clocking:
-        hz = tt.project_clk.freq()
+        hz = tt.clk.freq()
 
-    report({"design": design, "frequency": hz, "mode": tt.mode_str})
+    report({"tt.design": design, "tt.clk_freq": hz, "tt.mode": tt.mode_str})
 
 
 def reset_project():
@@ -59,7 +55,7 @@ def reset_project():
     tt.reset_project(True)
     tt.reset_project(False)
 
-    report("reset_project", 1)
+    report("tt.reset_project", 1)
 
 
 def set_clock_hz(hz):
@@ -70,7 +66,7 @@ def set_clock_hz(hz):
     else:
         tt.clock_project_stop()
         reportfreq = 0
-    report("frequency", reportfreq)
+    report("tt.clk_freq", reportfreq)
 
 
 def manual_clock(cycles=1):
@@ -79,7 +75,7 @@ def manual_clock(cycles=1):
         tt.clock_project_stop()
     for i in range(cycles):
         tt.clock_project_once()
-    report("clock_project", cycles)
+    report("tt.clk_once", cycles)
 
 
 # ROM format documented here: https://github.com/TinyTapeout/tt-chip-rom

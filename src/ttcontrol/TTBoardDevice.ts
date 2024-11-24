@@ -46,7 +46,6 @@ export class TTBoardDevice extends EventTarget {
   constructor(readonly port: SerialPort) {
     super();
     const [data, setData] = createStore({
-      deviceName: null as string | null,
       version: null as string | null,
       shuttle: null as string | null,
       logs: [] as ILogEntry[],
@@ -115,20 +114,17 @@ export class TTBoardDevice extends EventTarget {
 
   private processInput(line: string) {
     const [name, value] = line.split(/=(.+)/);
-    if (name === 'firmware') {
-      this.setData('deviceName', value);
-    }
-    if (name === 'version') {
-      this.setData('version', value);
-    }
-    if (name === 'shuttle') {
-      this.setData('shuttle', value);
-      if (!isFactoryMode()) {
-        loadShuttle(value);
-      }
-    }
-    if (name === 'protocol' && value !== '1') {
-      alert('Warning: unsupported protocol version.');
+    switch (name) {
+      case 'tt.sdk_version':
+        this.setData('version', value.replace(/^release_v/, ''));
+        break;
+
+      case 'shuttle':
+        this.setData('shuttle', value);
+        if (!isFactoryMode()) {
+          loadShuttle(value);
+        }
+        break;
     }
   }
 
@@ -140,7 +136,7 @@ export class TTBoardDevice extends EventTarget {
     this.writableStreamClosed = textEncoderStream.readable.pipeTo(this.port.writable);
     await this.writer.write('\x03\x03'); // Send Ctrl+C twice to stop any running program.
     await this.writer.write('\x01'); // Send Ctrl+A to enter RAW REPL mode.
-    await this.writer.write(ttControl + '\x04'); // Send the demo.py script and execute it.
+    await this.writer.write(ttControl + '\x04'); // Send the ttcontrol.py script and execute it.
     await this.sendCommand('read_rom()');
   }
 
