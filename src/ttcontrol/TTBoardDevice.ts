@@ -128,7 +128,15 @@ export class TTBoardDevice extends EventTarget {
     const textEncoderStream = new TextEncoderStream();
     this.writer = textEncoderStream.writable.getWriter();
     this.writableStreamClosed = textEncoderStream.readable.pipeTo(this.port.writable);
-    await this.writer.write('\x03\x03'); // Send Ctrl+C twice to stop any running program.
+    if (this.data.version == null) {
+      await this.writer.write('\n'); // Send a newlines to get REPL prompt.
+      await this.writer.write('print(f"tt.sdk_version={tt.version}")\r\n');
+      await new Promise((resolve) => setTimeout(resolve, 100)); // Wait for the response.
+    }
+    if (this.data.version == null) {
+      await this.writer.write('\x03\x03'); // Send Ctrl+C twice to stop any running program.
+      await this.writer.write('\x04'); // Send Ctrl+D to soft reset the board.
+    }
     await this.writer.write('\x01'); // Send Ctrl+A to enter RAW REPL mode.
     await this.writer.write(ttControl + '\x04'); // Send the ttcontrol.py script and execute it.
     await this.sendCommand('read_rom()');
