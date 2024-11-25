@@ -42,6 +42,7 @@ def write_ui_in(data):
 
 def select_design(design):
     tt = DemoBoard.get()
+    tt.apply_configs = False
     tt.shuttle[design].enable()
     hz = 0
     if tt.is_auto_clocking:
