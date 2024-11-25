@@ -25,13 +25,22 @@ report("tt.sdk_version", sdk_version)
 from ttboard.demoboard import DemoBoard
 from ttboard.mode import RPMode
 
+FirstLoadDone = False
+
+tt = DemoBoard.get()
 
 def enable_ui_in(enabled):
     tt = DemoBoard.get()
+    ac_freq = 0
+    if tt.is_auto_clocking:
+        ac_freq = tt.auto_clocking_freq
     if enabled:
         tt.mode = RPMode.ASIC_RP_CONTROL
     else:
         tt.mode = RPMode.ASIC_MANUAL_INPUTS
+
+    if ac_freq:
+        set_clock_hz(ac_freq)
 
     report("tt.mode", tt.mode_str)
 
@@ -41,8 +50,14 @@ def write_ui_in(data):
 
 
 def select_design(design):
+    global FirstLoadDone
     tt = DemoBoard.get()
-    tt.apply_configs = False
+    if not FirstLoadDone:
+        report('apply_configs', tt.apply_configs)
+        tt.apply_configs = False
+        tt.mode = RPMode.ASIC_MANUAL_INPUTS
+        FirstLoadDone = True
+
     tt.shuttle[design].enable()
     hz = 0
     if tt.is_auto_clocking:
@@ -101,3 +116,5 @@ def run_factory_test():
         print(f"error=factory_test_clocking, {err}")
     else:
         print("factory_test=OK")
+
+
