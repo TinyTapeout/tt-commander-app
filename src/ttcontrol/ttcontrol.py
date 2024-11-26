@@ -50,13 +50,9 @@ def write_ui_in(data):
 
 
 def select_design(design):
-    global FirstLoadDone
     tt = DemoBoard.get()
-    if not FirstLoadDone:
-        report('apply_configs', tt.apply_configs)
-        tt.apply_configs = False
-        tt.mode = RPMode.ASIC_MANUAL_INPUTS
-        FirstLoadDone = True
+    tt.apply_configs = False
+    tt.mode = RPMode.ASIC_MANUAL_INPUTS
 
     tt.shuttle[design].enable()
     hz = 0
