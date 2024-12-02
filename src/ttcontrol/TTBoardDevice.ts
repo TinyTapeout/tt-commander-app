@@ -2,6 +2,7 @@
 // Copyright (C) 2024, Tiny Tapeout LTD
 
 import { createStore } from 'solid-js/store';
+import { updateDeviceState } from '~/model/DeviceState';
 import { loadShuttle } from '~/model/shuttle';
 import { LineBreakTransformer } from '~/utils/LineBreakTransformer';
 import ttControl from './ttcontrol.py?raw';
@@ -113,6 +114,18 @@ export class TTBoardDevice extends EventTarget {
     switch (name) {
       case 'tt.sdk_version':
         this.setData('version', value.replace(/^release_v/, ''));
+        break;
+
+      case 'tt.mode':
+        updateDeviceState({ uiInEnabled: value === 'ASIC_RP_CONTROL' });
+        break;
+
+      case 'tt.design':
+        updateDeviceState({ selectedDesign: parseInt(value, 10) });
+        break;
+
+      case 'tt.clk_freq':
+        updateDeviceState({ clockHz: parseInt(value, 10) });
         break;
 
       case 'shuttle':
