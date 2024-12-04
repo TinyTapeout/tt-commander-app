@@ -156,9 +156,9 @@ def start_monitoring(io, frequency):
     def cb(t):
         global Timers
         v = int(io.value)
-        print("") # ensure we're on a new line
         if v != Timers[name]["value"]:
             Timers[name]["value"] = v
+            print("") # ensure we're on a new line
             report(f"tt.{name}", v)
 
     Timers[name]["timer"].init(mode=machine.Timer.PERIODIC, freq=frequency, callback=cb)
