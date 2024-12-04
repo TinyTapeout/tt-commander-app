@@ -70,7 +70,7 @@ def dump_state():
         "monitor": ','.join(Timers.keys())
     }
     for io in [tt.ui_in, tt.uo_out, tt.uio_in]:
-        vals[io.port.name] = int(io.value)
+        vals[f'tt.{io.port.name}'] = int(io.value)
             
     report(vals)
     
