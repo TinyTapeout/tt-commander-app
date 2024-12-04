@@ -30,6 +30,8 @@ export interface ILogEntry {
 
 export type TerminalListener = (data: string) => void;
 
+const MAX_LOG_ENTRIES = 1000;
+
 export class TTBoardDevice extends EventTarget {
   private reader?: ReadableStreamDefaultReader<string>;
   private terminalReader?: ReadableStreamDefaultReader<string>;
@@ -52,8 +54,16 @@ export class TTBoardDevice extends EventTarget {
     this.setData = setData;
   }
 
+  private addLogEntry(entry: ILogEntry) {
+    const newLogs = [...this.data.logs, entry];
+    if (newLogs.length > MAX_LOG_ENTRIES) {
+      newLogs.shift();
+    }
+    this.setData('logs', newLogs);
+  }
+
   async sendCommand(command: string) {
-    this.setData('logs', [...this.data.logs, { text: command, sent: true }]);
+    this.addLogEntry({ text: command, sent: true });
     await this.writer?.write(`${command}\x04`);
   }
 
@@ -70,7 +80,7 @@ export class TTBoardDevice extends EventTarget {
   }
 
   async factorySetup() {
-    this.setData('logs', [...this.data.logs, { text: '<<< factory setup >>>', sent: true }]);
+    this.addLogEntry({ text: '<<< factory setup >>>', sent: true });
     await this.sendCommand('run_factory_test()');
   }
 
@@ -200,7 +210,7 @@ export class TTBoardDevice extends EventTarget {
           if (value && !this.terminalListener) {
             const cleanValue = cleanupRawREPL(value);
             this.processInput(cleanValue);
-            this.setData('logs', [...this.data.logs, { text: cleanValue, sent: false }]);
+            this.addLogEntry({ text: cleanValue, sent: false });
           }
         }
       } catch (error) {
