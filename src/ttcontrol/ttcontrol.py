@@ -168,3 +168,10 @@ def stop_monitoring(io):
         
     Timers[name]['timer'].deinit()
     del Timers[name]
+    
+def stop_all_monitoring():
+    global Timers
+    tt = DemoBoard.get() 
+    for name in Timers.keys():
+        stop_monitoring(getattr(tt, name))
+        
