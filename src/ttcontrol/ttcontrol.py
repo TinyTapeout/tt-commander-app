@@ -152,10 +152,13 @@ def start_monitoring(io, frequency):
     Timers[name] = {"timer": machine.Timer(), "value": 0, "freq": frequency}
 
     def cb(t):
-        global Timers
         v = int(io.value)
-        if v != Timers[name]["value"]:
-            Timers[name]["value"] = v
+        timer = Timers.get(name)
+        if timer is None:
+            t.deinit()
+            return
+        if v != timer["value"]:
+            timer["value"] = v
             print("")  # ensure we're on a new line
             report(f"tt.{name}", v)
 
