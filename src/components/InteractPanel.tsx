@@ -6,7 +6,7 @@ import {
   ToggleButton,
   ToggleButtonGroup,
 } from '@suid/material';
-import { createSignal, onCleanup, onMount } from 'solid-js';
+import { createSignal, onCleanup, onMount, Show } from 'solid-js';
 import { deviceState, updateDeviceState } from '~/model/DeviceState';
 import { TTBoardDevice } from '~/ttcontrol/TTBoardDevice';
 import { InteractSettingsMenu } from './InteractSettingsMenu';
@@ -102,6 +102,7 @@ export function InteractPanel(props: IInteractPanelProps) {
     <>
       <Stack direction="row" spacing={1} marginTop={2} marginBottom={2}>
         <FormControlLabel
+          sx={{ minWidth: 90 }}
           control={
             <Checkbox
               checked={deviceState.uiInEnabled}
@@ -156,6 +157,28 @@ export function InteractPanel(props: IInteractPanelProps) {
           </ToggleButton>
         </ToggleButtonGroup>
         <InteractSettingsMenu momentaryMode={momentaryMode()} setMomentaryMode={setMomentaryMode} />
+      </Stack>
+      <Stack direction="row" spacing={1} marginBottom={2} alignItems="center">
+        <FormControlLabel
+          sx={{ minWidth: 90 }}
+          control={
+            <Checkbox
+              checked={deviceState.uoOutEnabled}
+              onChange={(event, value) => {
+                updateDeviceState({ uoOutEnabled: value });
+                props.device.monitorUoOut(value);
+              }}
+            />
+          }
+          label="uo_out"
+        />
+        <Show when={deviceState.uoOutEnabled}>
+          <Stack direction="row" spacing={3}>
+            <code style={{ 'min-width': '2em' }}>{deviceState.uoOutValue.toString()}</code>
+            <code>0x{deviceState.uoOutValue.toString(16).padStart(2, '0')}</code>
+            <code>0b{deviceState.uoOutValue.toString(2).padStart(8, '0')}</code>
+          </Stack>
+        </Show>
       </Stack>
       <Stack direction="row">
         <Button onClick={() => props.device.resetProject()}>Reset (R)</Button>

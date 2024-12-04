@@ -86,6 +86,10 @@ export class TTBoardDevice extends EventTarget {
     await this.sendCommand(`write_ui_in(0b${value.toString(2).padStart(8, '0')})`);
   }
 
+  async monitorUoOut(enable: boolean) {
+    await this.sendCommand(`monitor_uo_out(${enable ? '10' : '0'})`);
+  }
+
   async resetProject() {
     await this.sendCommand('reset_project()');
   }
@@ -118,6 +122,10 @@ export class TTBoardDevice extends EventTarget {
 
       case 'tt.mode':
         updateDeviceState({ uiInEnabled: value === 'ASIC_RP_CONTROL' });
+        break;
+
+      case 'tt.uo_out':
+        updateDeviceState({ uoOutValue: parseInt(value, 10) });
         break;
 
       case 'tt.design':

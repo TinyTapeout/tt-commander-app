@@ -40,12 +40,10 @@ def enable_ui_in(enabled):
         ac_freq = tt.auto_clocking_freq
     if enabled:
         tt.mode = RPMode.ASIC_RP_CONTROL
-        start_monitoring(tt.uo_out, 10)
         stop_monitoring(tt.ui_in)
     else:
         tt.mode = RPMode.ASIC_MANUAL_INPUTS
         start_monitoring(tt.ui_in, 10)
-        start_monitoring(tt.uo_out, 10)
 
     if ac_freq:
         set_clock_hz(ac_freq)
@@ -55,6 +53,13 @@ def enable_ui_in(enabled):
 
 def write_ui_in(data):
     DemoBoard.get().ui_in.value = data
+
+
+def monitor_uo_out(frequency=10):
+    if frequency > 0:
+        start_monitoring(DemoBoard.get().uo_out, frequency)
+    else:
+        stop_monitoring(DemoBoard.get().uo_out)
 
 
 def dump_state():
@@ -151,6 +156,7 @@ def start_monitoring(io, frequency):
     def cb(t):
         global Timers
         v = int(io.value)
+        print("") # ensure we're on a new line
         if v != Timers[name]["value"]:
             Timers[name]["value"] = v
             report(f"tt.{name}", v)
