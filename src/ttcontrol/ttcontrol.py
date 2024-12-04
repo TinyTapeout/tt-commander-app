@@ -28,8 +28,6 @@ report("tt.sdk_version", sdk_version)
 from ttboard.demoboard import DemoBoard
 from ttboard.mode import RPMode
 
-FirstLoadDone = False
-
 tt = DemoBoard.get()
 
 
@@ -158,7 +156,7 @@ def start_monitoring(io, frequency):
         v = int(io.value)
         if v != Timers[name]["value"]:
             Timers[name]["value"] = v
-            print("") # ensure we're on a new line
+            print("")  # ensure we're on a new line
             report(f"tt.{name}", v)
 
     Timers[name]["timer"].init(mode=machine.Timer.PERIODIC, freq=frequency, callback=cb)
