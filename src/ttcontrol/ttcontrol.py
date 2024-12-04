@@ -5,7 +5,7 @@ import os
 import sys
 import machine
 
-Timers = dict()
+_tt_timers = dict()
 
 
 def report(dict_or_key: dict, val: str = None):
@@ -61,7 +61,7 @@ def monitor_uo_out(frequency=10):
 
 
 def dump_state():
-    global Timers
+    global _tt_timers
     tt = DemoBoard.get()
     design = 0
     if tt.shuttle.enabled is not None:
@@ -72,7 +72,7 @@ def dump_state():
         "tt.design": design,
         "tt.clk_freq": hz,
         "tt.mode": tt.mode_str,
-        "monitor": ",".join(Timers.keys()),
+        "monitor": ",".join(_tt_timers.keys()),
     }
     for io in [tt.ui_in, tt.uo_out, tt.uio_in]:
         vals[f"tt.{io.port.name}"] = int(io.value)
@@ -141,19 +141,19 @@ def run_factory_test():
 
 
 def start_monitoring(io, frequency):
-    global Timers
+    global _tt_timers
     name = io.port.name
-    if name in Timers:
-        if Timers[name]["freq"] == frequency:
+    if name in _tt_timers:
+        if _tt_timers[name]["freq"] == frequency:
             # already good
             return
-        Timers[name]["timer"].deinit()
+        _tt_timers[name]["timer"].deinit()
 
-    Timers[name] = {"timer": machine.Timer(), "value": 0, "freq": frequency}
+    _tt_timers[name] = {"timer": machine.Timer(), "value": 0, "freq": frequency}
 
     def cb(t):
         v = int(io.value)
-        timer = Timers.get(name)
+        timer = _tt_timers.get(name)
         if timer is None:
             t.deinit()
             return
@@ -162,21 +162,21 @@ def start_monitoring(io, frequency):
             print("")  # ensure we're on a new line
             report(f"tt.{name}", v)
 
-    Timers[name]["timer"].init(mode=machine.Timer.PERIODIC, freq=frequency, callback=cb)
+    _tt_timers[name]["timer"].init(mode=machine.Timer.PERIODIC, freq=frequency, callback=cb)
 
 
 def stop_monitoring(io):
-    global Timers
+    global _tt_timers
     name = io.port.name
-    if name not in Timers:
+    if name not in _tt_timers:
         return
 
-    Timers[name]["timer"].deinit()
-    del Timers[name]
+    _tt_timers[name]["timer"].deinit()
+    del _tt_timers[name]
 
 
 def stop_all_monitoring():
-    global Timers
+    global _tt_timers
     tt = DemoBoard.get()
-    for name in Timers.keys():
+    for name in _tt_timers.keys():
         stop_monitoring(getattr(tt, name))
