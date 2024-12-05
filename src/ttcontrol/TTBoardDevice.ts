@@ -52,6 +52,7 @@ export class TTBoardDevice extends EventTarget {
   constructor(readonly port: SerialPort) {
     super();
     const [data, setData] = createStore({
+      boot: false,
       version: null as string | null,
       shuttle: null as string | null,
       logs: [] as ILogEntry[],
@@ -148,6 +149,11 @@ export class TTBoardDevice extends EventTarget {
   }
 
   private processInput(line: string) {
+    if (line.startsWith('BOOT: ')) {
+      this.setData('boot', true);
+      return;
+    }
+
     const [name, value] = line.split(/=(.+)/);
     switch (name) {
       case 'tt.sdk_version':
@@ -187,6 +193,15 @@ export class TTBoardDevice extends EventTarget {
       await this.writer.write('\n'); // Send a newlines to get REPL prompt.
       await this.writer.write('print(f"tt.sdk_version={tt.version}")\r\n');
       await new Promise((resolve) => setTimeout(resolve, 100)); // Wait for the response.
+    }
+    if (this.data.boot) {
+      // Wait for the board to finish booting, up to 6 seconds:
+      for (let i = 0; i < 60; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        if (this.data.version) {
+          break;
+        }
+      }
     }
     if (this.data.version == null) {
       await this.writer.write('\x03\x03'); // Send Ctrl+C twice to stop any running program.
