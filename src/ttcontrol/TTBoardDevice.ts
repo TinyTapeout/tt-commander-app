@@ -67,8 +67,9 @@ export class TTBoardDevice extends EventTarget {
     await this.writer?.write(`${command}\x04`);
   }
 
-  async selectDesign(index: number) {
-    await this.sendCommand(`select_design(${index})`);
+  async selectDesign(index: number, clockHz?: number) {
+    const clockArg = clockHz != null ? `, ${clockHz}` : '';
+    await this.sendCommand(`select_design(${index}${clockArg})`);
   }
 
   async setClock(hz: number) {

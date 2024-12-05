@@ -80,12 +80,14 @@ def dump_state():
     report(vals)
 
 
-def select_design(design):
+def select_design(design, clock_hz=None):
     tt = DemoBoard.get()
     tt.apply_configs = False
     tt.mode = RPMode.ASIC_MANUAL_INPUTS
 
     tt.shuttle[design].enable()
+    if clock_hz is not None:
+        set_clock_hz(clock_hz)
     dump_state()
 
 

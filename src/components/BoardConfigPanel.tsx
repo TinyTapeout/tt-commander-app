@@ -100,7 +100,8 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
               void props.device.writeUIIn(0);
               updateDeviceState({ uiIn: [] });
             }
-            props.device.selectDesign(deviceState.selectedDesign);
+            const project = shuttle.projects.find((p) => p.address === deviceState.selectedDesign);
+            props.device.selectDesign(deviceState.selectedDesign, project?.clock_hz);
           }}
           variant="contained"
         >
