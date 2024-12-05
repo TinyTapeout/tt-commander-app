@@ -39,6 +39,12 @@ export class TTBoardDevice extends EventTarget {
   private writableStreamClosed?: Promise<void>;
   private writer?: WritableStreamDefaultWriter<string>;
 
+  private terminalDetachedPromise? = Promise.resolve();
+  private terminalDetachedResolve?: () => void;
+  get terminalDetached() {
+    return this.terminalDetachedPromise;
+  }
+
   readonly data;
   private terminalListener: TerminalListener | null = null;
   private setData;
@@ -104,7 +110,8 @@ export class TTBoardDevice extends EventTarget {
   }
 
   async monitorUoOut(enable: boolean) {
-    await this.sendCommand(`monitor_uo_out(${enable ? '10' : '0'})`);
+    const monitorFreq = 10;
+    await this.sendCommand(`monitor_uo_out(${enable ? monitorFreq : '0'})`);
   }
 
   async stopAllMonitoring() {
@@ -120,6 +127,9 @@ export class TTBoardDevice extends EventTarget {
   }
 
   async attachTerminal(listener: TerminalListener) {
+    this.terminalDetachedPromise = new Promise((resolve) => {
+      this.terminalDetachedResolve = resolve;
+    });
     await this.stopAllMonitoring();
     this.writer?.write('\x02'); // Send Ctrl+B to exit RAW REPL mode.
     this.terminalListener = listener;
@@ -130,6 +140,7 @@ export class TTBoardDevice extends EventTarget {
     await this.writer?.write('\x03\x03'); // Send Ctrl+C twice to stop any running program.
     await this.writer?.write('\x01'); // Send Ctrl+A to enter RAW REPL mode.
     await this.syncState();
+    this.terminalDetachedResolve?.();
   }
 
   async terminalWrite(data: string) {

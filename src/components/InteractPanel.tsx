@@ -91,6 +91,20 @@ export function InteractPanel(props: IInteractPanelProps) {
     window.removeEventListener('keyup', downUpHandler);
   });
 
+  // Stop monitoring uo_out when the component is unmounted, resume monitoring when mounted.
+  onMount(async () => {
+    if (deviceState.uoOutEnabled) {
+      await props.device.terminalDetached;
+      await props.device.monitorUoOut(true);
+    }
+  });
+
+  onCleanup(async () => {
+    if (deviceState.uoOutEnabled) {
+      await props.device.monitorUoOut(false);
+    }
+  });
+
   const uiButtonStyle = {
     '&.MuiToggleButton-root.Mui-selected:not(.Mui-disabled)': {
       backgroundColor: 'success.main',

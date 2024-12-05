@@ -56,6 +56,8 @@ def write_ui_in(data):
 def monitor_uo_out(frequency=10):
     if frequency > 0:
         start_monitoring(DemoBoard.get().uo_out, frequency)
+        print("")
+        report("tt.uo_out", int(DemoBoard.get().uo_out.value))
     else:
         stop_monitoring(DemoBoard.get().uo_out)
 
@@ -72,7 +74,6 @@ def dump_state():
         "tt.design": design,
         "tt.clk_freq": hz,
         "tt.mode": tt.mode_str,
-        "monitor": ",".join(_tt_timers.keys()),
     }
     for io in [tt.ui_in, tt.uo_out, tt.uio_in]:
         vals[f"tt.{io.port.name}"] = int(io.value)
@@ -164,7 +165,9 @@ def start_monitoring(io, frequency):
             print("")  # ensure we're on a new line
             report(f"tt.{name}", v)
 
-    _tt_timers[name]["timer"].init(mode=machine.Timer.PERIODIC, freq=frequency, callback=cb)
+    _tt_timers[name]["timer"].init(
+        mode=machine.Timer.PERIODIC, freq=frequency, callback=cb
+    )
 
 
 def stop_monitoring(io):
