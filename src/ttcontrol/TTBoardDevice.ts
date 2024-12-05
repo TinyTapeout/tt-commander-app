@@ -62,9 +62,15 @@ export class TTBoardDevice extends EventTarget {
     this.setData('logs', newLogs);
   }
 
-  async sendCommand(command: string) {
-    this.addLogEntry({ text: command, sent: true });
+  async sendCommand(command: string, log = true) {
+    if (log) {
+      this.addLogEntry({ text: command, sent: true });
+    }
     await this.writer?.write(`${command}\x04`);
+  }
+
+  async syncState() {
+    await this.sendCommand('dump_state()');
   }
 
   async selectDesign(index: number, clockHz?: number) {
@@ -101,6 +107,10 @@ export class TTBoardDevice extends EventTarget {
     await this.sendCommand(`monitor_uo_out(${enable ? '10' : '0'})`);
   }
 
+  async stopAllMonitoring() {
+    await this.sendCommand('stop_all_monitoring()', false);
+  }
+
   async resetProject() {
     await this.sendCommand('reset_project()');
   }
@@ -110,6 +120,7 @@ export class TTBoardDevice extends EventTarget {
   }
 
   async attachTerminal(listener: TerminalListener) {
+    await this.stopAllMonitoring();
     this.writer?.write('\x02'); // Send Ctrl+B to exit RAW REPL mode.
     this.terminalListener = listener;
   }
@@ -118,6 +129,7 @@ export class TTBoardDevice extends EventTarget {
     this.terminalListener = null;
     await this.writer?.write('\x03\x03'); // Send Ctrl+C twice to stop any running program.
     await this.writer?.write('\x01'); // Send Ctrl+A to enter RAW REPL mode.
+    await this.syncState();
   }
 
   async terminalWrite(data: string) {
@@ -172,6 +184,7 @@ export class TTBoardDevice extends EventTarget {
     await this.writer.write('\x01'); // Send Ctrl+A to enter RAW REPL mode.
     await this.writer.write(ttControl + '\x04'); // Send the ttcontrol.py script and execute it.
     await this.sendCommand('read_rom()');
+    await this.syncState();
   }
 
   private async run() {
@@ -245,6 +258,7 @@ export class TTBoardDevice extends EventTarget {
     await this.readableStreamClosed?.catch(() => {});
 
     try {
+      await this.stopAllMonitoring();
       await this.writer?.write('\x02\x03\x03'); // Exit RAW REPL mode and stop any running code.
     } catch (e) {
       console.warn('Failed to exit RAW REPL mode:', e);
