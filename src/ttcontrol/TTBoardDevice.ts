@@ -204,8 +204,12 @@ export class TTBoardDevice extends EventTarget {
       }
     }
     if (this.data.version == null) {
-      await this.writer.write('\x03\x03'); // Send Ctrl+C twice to stop any running program.
-      await this.writer.write('\x04'); // Send Ctrl+D to soft reset the board.
+      // The following sequence tries to ensure clean reboot:
+      // Send Ctrl+C twice to stop any running program,
+      // followed by Ctrl+B to exit RAW REPL mode (if it was entered),
+      // and finally Ctrl+D to soft reset the board.
+      await this.writer.write('\x03\x03\x02');
+      await this.writer.write('\x04');
     }
     await this.writer.write('\x01'); // Send Ctrl+A to enter RAW REPL mode.
     await this.writer.write(ttControl + '\x04'); // Send the ttcontrol.py script and execute it.
@@ -285,7 +289,7 @@ export class TTBoardDevice extends EventTarget {
 
     try {
       await this.stopAllMonitoring();
-      await this.writer?.write('\x02\x03\x03'); // Exit RAW REPL mode and stop any running code.
+      await this.writer?.write('\x03\x03\x02'); // Stop any running code and exit the RAW REPL mode.
     } catch (e) {
       console.warn('Failed to exit RAW REPL mode:', e);
     }
