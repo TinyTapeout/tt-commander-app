@@ -4,10 +4,12 @@
 /// <reference types="dom-serial" />
 
 import { CssBaseline, Stack, ThemeProvider, Typography } from '@suid/material';
-import { Show, createSignal, onCleanup, onMount } from 'solid-js';
+import { Show, createEffect, createSignal, onCleanup, onMount } from 'solid-js';
+import { compareVersions, minimumFirmwareVersion } from '~/model/firmware';
 import { TTBoardDevice } from '~/ttcontrol/TTBoardDevice';
 import { theme } from '~/utils/theme';
 import { BoardCommander } from './BoardCommander';
+import { FirmwareUpgradeRequired } from './FirmwareUpgradeRequired';
 import { Footer } from './Footer';
 import { Header } from './Header';
 import { LoadingButton } from './LoadingButton';
@@ -17,6 +19,7 @@ export function App() {
   const [breakoutDevice, setBreakoutDevice] = createSignal<TTBoardDevice | null>(null);
   const [connecting, setConnecting] = createSignal(false);
   const [connectError, setConnectError] = createSignal<Error | null>(null);
+  const [firmwareUpdateRequired, setFirmwareUpdateRequired] = createSignal(false);
 
   const connect = async () => {
     setConnecting(true);
@@ -28,6 +31,7 @@ export function App() {
       const device = new TTBoardDevice(port);
       device.addEventListener('close', () => setBreakoutDevice(null));
       setBreakoutDevice(device);
+      setFirmwareUpdateRequired(false);
       void device.start();
     } catch (e) {
       setConnectError(e as Error);
@@ -42,6 +46,18 @@ export function App() {
 
   onCleanup(() => {
     breakoutDevice()?.close();
+  });
+
+  createEffect(() => {
+    const device = breakoutDevice();
+    if (device?.data.version) {
+      const value = compareVersions(device.data.version, minimumFirmwareVersion) < 0;
+      setFirmwareUpdateRequired(value);
+      if (value) {
+        console.warn('Detected outdated firmware version:', device.data.version);
+        console.warn('Minimum required version:', minimumFirmwareVersion);
+      }
+    }
   });
 
   return (
@@ -82,7 +98,15 @@ export function App() {
             </Stack>
           </Show>
 
-          <Show when={breakoutDevice()}>{(device) => <BoardCommander device={device()} />}</Show>
+          <Show when={firmwareUpdateRequired()}>
+            <Stack mt={2}>
+              <FirmwareUpgradeRequired device={breakoutDevice() ?? undefined} />
+            </Stack>
+          </Show>
+
+          <Show when={!firmwareUpdateRequired() && breakoutDevice()}>
+            {(device) => <BoardCommander device={device()} />}
+          </Show>
         </Stack>
 
         <Footer />
