@@ -3,7 +3,8 @@
 
 /// <reference types="dom-serial" />
 
-import { CssBaseline, Stack, ThemeProvider, Typography } from '@suid/material';
+import { Warning } from '@suid/icons-material';
+import { CssBaseline, Paper, Stack, ThemeProvider, Typography } from '@suid/material';
 import { Show, createEffect, createSignal, onCleanup, onMount } from 'solid-js';
 import { compareVersions, minimumFirmwareVersion } from '~/model/firmware';
 import { TTBoardDevice } from '~/ttcontrol/TTBoardDevice';
@@ -20,9 +21,11 @@ export function App() {
   const [connecting, setConnecting] = createSignal(false);
   const [connectError, setConnectError] = createSignal<Error | null>(null);
   const [firmwareUpdateRequired, setFirmwareUpdateRequired] = createSignal(false);
+  const [unsupportedVersion, setUnsupportedVersion] = createSignal<string | null>(null);
 
   const connect = async () => {
     setConnecting(true);
+    setUnsupportedVersion(null);
     try {
       const port = await navigator.serial.requestPort({
         filters: [{ usbVendorId: 0x2e8a, usbProductId: 0x0005 }],
@@ -51,7 +54,12 @@ export function App() {
   createEffect(() => {
     const device = breakoutDevice();
     if (device?.data.version) {
-      const value = compareVersions(device.data.version, minimumFirmwareVersion) < 0;
+      let value = false;
+      try {
+        value = compareVersions(device.data.version, minimumFirmwareVersion) < 0;
+      } catch (e) {
+        setUnsupportedVersion(device.data.version);
+      }
       setFirmwareUpdateRequired(value);
       if (value) {
         console.warn('Detected outdated firmware version:', device.data.version);
@@ -102,6 +110,15 @@ export function App() {
             <Stack mt={2}>
               <FirmwareUpgradeRequired device={breakoutDevice() ?? undefined} />
             </Stack>
+          </Show>
+
+          <Show when={unsupportedVersion()}>
+            <Paper sx={{ bgcolor: 'warning.light', padding: 2, marginTop: 2 }}>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Warning fontSize="large" />
+                <Stack> Unsupported firmware version: {unsupportedVersion()}</Stack>
+              </Stack>
+            </Paper>
           </Show>
 
           <Show when={!firmwareUpdateRequired() && breakoutDevice()}>
