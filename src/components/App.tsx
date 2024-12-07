@@ -57,7 +57,7 @@ export function App() {
           </Typography>
 
           <Typography variant="body1" color="text.secondary" gutterBottom>
-            For Tiny Tapeout boards with TT04 or a later chip.
+            For Tiny Tapeout boards with TT04, TT05, or TT03p5 chips.
           </Typography>
 
           <Show when={!supported()}>
