@@ -1,5 +1,5 @@
 export const minimumFirmwareVersion = '2.0.0RC2';
-export const latestFirmwareVersion = '2.0.0RC6';
+export const latestFirmwareVersion = '2.0.0';
 
 export function firmwareDownloadURL(version: string) {
   return `https://github.com/TinyTapeout/tt-micropython-firmware/releases/download/v${version}/tt-demo-rp2040-v${version}.uf2`;
