@@ -10,12 +10,14 @@ import {
 import { For, Show, createResource } from 'solid-js';
 import { deviceState } from '~/model/DeviceState';
 import { Project, shuttle } from '~/model/shuttle';
+import { AnalogPinoutTable } from './AnalogPinoutTable';
 
 interface ExtraProjectInfo {
   macro: string;
   author: string;
   description: string;
   pinout: Record<string, string>;
+  analog_pins: number[];
 }
 
 const extraProjectInfo = new WeakMap<Project, ExtraProjectInfo>();
@@ -36,7 +38,7 @@ export function PinoutPanel() {
     }
 
     const response = await fetch(
-      `https://index.tinytapeout.com/${shuttle.id}.json?fields=author,description,pinout&filter=${project.macro}`,
+      `https://index.tinytapeout.com/${shuttle.id}.json?fields=author,description,pinout,analog_pins&filter=${project.macro}`,
     );
     const json: { projects: ExtraProjectInfo[] } = await response.json();
     const result = json.projects.find((p) => p.macro === project.macro);
@@ -81,6 +83,15 @@ export function PinoutPanel() {
           </TableBody>
         </Show>
       </Table>
+      <Show when={projectInfo()?.analog_pins.length}>
+        <Typography variant="h6" marginTop={4}>
+          Analog pins
+        </Typography>
+        <AnalogPinoutTable
+          analogPins={projectInfo()?.analog_pins ?? []}
+          pinout={projectInfo()?.pinout ?? {}}
+        />
+      </Show>
     </Stack>
   );
 }
