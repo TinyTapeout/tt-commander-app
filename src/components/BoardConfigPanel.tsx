@@ -1,4 +1,4 @@
-import { FactCheck, PrecisionManufacturing, Save } from '@suid/icons-material';
+import { Error, FactCheck, PrecisionManufacturing, Save, Warning } from '@suid/icons-material';
 import {
   Button,
   FormControl,
@@ -27,6 +27,9 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
 
   const selectedProject = () =>
     shuttle.projects.find((p) => p.address === deviceState.selectedDesign);
+
+  const dangerLevel = () => selectedProject()?.danger_level;
+  const dangerReason = () => selectedProject()?.danger_reason;
 
   const setSelectedAddress = (address: number) => {
     updateDeviceState({ selectedDesign: address });
@@ -104,9 +107,21 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
             props.device.selectDesign(deviceState.selectedDesign, project?.clock_hz);
           }}
           variant="contained"
+          disabled={dangerLevel() === 'high'}
+          title={dangerReason()}
         >
           Select
         </Button>
+        <Show when={dangerLevel() === 'medium'}>
+          <span title={dangerReason()}>
+            <Warning color="warning" fontSize="large" sx={{ marginLeft: 0.5 }} />
+          </span>
+        </Show>
+        <Show when={dangerLevel() === 'high'}>
+          <span title={dangerReason()}>
+            <Error color="error" fontSize="large" sx={{ marginLeft: 0.5 }} />
+          </span>
+        </Show>
       </Stack>
 
       <Stack direction="row" spacing={1} marginBottom={1}>

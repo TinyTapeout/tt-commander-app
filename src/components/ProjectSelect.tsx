@@ -1,3 +1,4 @@
+import { Error, Warning } from '@suid/icons-material';
 import {
   List,
   ListItem,
@@ -10,7 +11,7 @@ import {
 } from '@suid/material';
 import createElementRef from '@suid/system/createElementRef';
 import { createSelect, fuzzyHighlight, fuzzySearch } from '@thisbeyond/solid-select';
-import { For, createEffect } from 'solid-js';
+import { For, Show, createEffect } from 'solid-js';
 import { Project } from '~/model/shuttle';
 import { fuzzySort } from '~/utils/fuzzySort';
 import { Popper } from './Popper';
@@ -40,6 +41,24 @@ export function ProjectListItem(props: { project: Project; search: string }) {
       <Stack flex={1}>
         <Typography flex={1} minWidth="100%" whiteSpace="pre-wrap">
           {title()}
+          <Show when={props.project.danger_level === 'medium'}>
+            <span title={props.project.danger_reason}>
+              <Warning
+                color="warning"
+                fontSize="small"
+                sx={{ verticalAlign: 'middle', marginLeft: 1 }}
+              />
+            </span>
+          </Show>
+          <Show when={props.project.danger_level === 'high'}>
+            <span title={props.project.danger_reason}>
+              <Error
+                color="error"
+                fontSize="small"
+                sx={{ verticalAlign: 'middle', marginLeft: 1 }}
+              />
+            </span>
+          </Show>
         </Typography>
         <Typography
           variant="body2"

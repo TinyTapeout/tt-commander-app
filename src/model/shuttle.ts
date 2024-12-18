@@ -12,6 +12,8 @@ export interface Project {
   repo: string;
   commit: string;
   clock_hz: number;
+  danger_level?: 'high' | 'medium' | 'safe' | 'unknown';
+  danger_reason?: string;
 }
 
 export const [shuttle, updateShuttle] = createStore({
@@ -28,7 +30,7 @@ export async function loadShuttle(id: string) {
   });
   try {
     const request = await fetch(
-      `https://index.tinytapeout.com/${id}.json?fields=title,author,repo,address,macro,clock_hz,commit`,
+      `https://index.tinytapeout.com/${id}.json?fields=title,author,repo,address,macro,clock_hz,commit,danger_level,danger_reason`,
     );
     const shuttleIndex: { projects: Project[] } = await request.json();
     shuttleIndex.projects.sort((a, b) => a.title.localeCompare(b.title));
