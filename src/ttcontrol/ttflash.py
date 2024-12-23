@@ -18,12 +18,12 @@ class SPIFlash:
     def __init__(self, tt):
         self.tt = tt
         self.spi = SoftSPI(
-            sck=tt.bidirs[7].raw_pin,
-            mosi=tt.bidirs[1].raw_pin,
-            miso=tt.bidirs[2].raw_pin,
+            sck=tt.pins.uio3.raw_pin,
+            mosi=tt.pins.uio1.raw_pin,
+            miso=tt.pins.uio2.raw_pin,
         )
         self.spi.init(baudrate=8_000_000, polarity=1, phase=1)
-        self.cs = tt.bidirs[6].raw_pin
+        self.cs = tt.pins.uio0.raw_pin
         self.cs.init(self.cs.OUT, value=1)
 
     def read_status(self):
