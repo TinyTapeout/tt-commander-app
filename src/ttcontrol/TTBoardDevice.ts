@@ -154,6 +154,8 @@ export class TTBoardDevice extends EventTarget {
       return;
     }
 
+    this.dispatchEvent(new CustomEvent('line', { detail: line }));
+
     const [name, value] = line.split(/=(.+)/);
     switch (name) {
       case 'tt.sdk_version':

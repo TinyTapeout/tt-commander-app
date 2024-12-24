@@ -6,6 +6,7 @@ import { Show, createSignal } from 'solid-js';
 import { TTBoardDevice } from '~/ttcontrol/TTBoardDevice';
 import { BoardConfigPanel } from './BoardConfigPanel';
 import { DebugLogs } from './DebugLogs';
+import { FlashPanel } from './FlashPanel';
 import { InteractPanel } from './InteractPanel';
 import { PinoutPanel } from './PinoutPanel';
 import { ReplPanel } from './ReplPanel';
@@ -14,7 +15,7 @@ export interface IBreakoutControlProps {
   device: TTBoardDevice;
 }
 
-type ITabName = 'config' | 'interact' | 'pinout' | 'repl';
+type ITabName = 'config' | 'interact' | 'pinout' | 'repl' | 'flash';
 
 export function BoardCommander(props: IBreakoutControlProps) {
   const [activeTab, setActiveTab] = createSignal<ITabName>('config');
@@ -81,6 +82,12 @@ export function BoardCommander(props: IBreakoutControlProps) {
           >
             REPL
           </Button>
+          <Button
+            onClick={() => setActiveTab('flash')}
+            variant={activeTab() === 'flash' ? 'contained' : 'outlined'}
+          >
+            Flash
+          </Button>
         </ButtonGroup>
         <Show when={activeTab() === 'config'}>
           <BoardConfigPanel device={props.device} />
@@ -93,6 +100,9 @@ export function BoardCommander(props: IBreakoutControlProps) {
         </Show>
         <Show when={activeTab() === 'repl'}>
           <ReplPanel device={props.device} />
+        </Show>
+        <Show when={activeTab() === 'flash'}>
+          <FlashPanel device={props.device} />
         </Show>
       </Paper>
 
