@@ -1,12 +1,16 @@
+// SPDX-License-Identifier: Apache-2.0
+// Copyright (C) 2024, Tiny Tapeout LTD
+// Author: Uri Shaked
+
 import { List, ListItem } from '@suid/material';
 import { For, createEffect } from 'solid-js';
 import { ILogEntry } from '~/ttcontrol/TTBoardDevice';
 
 export function DebugLogs(props: { logs: ILogEntry[] }) {
-  let listRef: HTMLUListElement;
+  let listRef: HTMLUListElement | null = null;
 
   createEffect(() => {
-    if (props.logs.length > 0) {
+    if (listRef && props.logs.length > 0) {
       listRef.scrollTop = listRef.scrollHeight;
     }
   });
@@ -14,7 +18,7 @@ export function DebugLogs(props: { logs: ILogEntry[] }) {
   return (
     <List
       dense
-      ref={listRef!}
+      ref={(el) => (listRef = el)}
       sx={{
         background: 'black',
         fontFamily: 'monospace',
