@@ -1,8 +1,8 @@
 import { Stack, Typography } from '@suid/material';
 import { FitAddon } from '@xterm/addon-fit';
 import { onCleanup, onMount } from 'solid-js';
-import { Terminal } from 'xterm';
-import 'xterm/css/xterm.css';
+import { Terminal } from '@xterm/xterm';
+import '@xterm/xterm/css/xterm.css';
 import { TTBoardDevice } from '~/ttcontrol/TTBoardDevice';
 
 export interface IReplPanelProps {
