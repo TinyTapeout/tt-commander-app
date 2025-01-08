@@ -92,13 +92,27 @@ def select_design(design, clock_hz=None):
     dump_state()
 
 
-def reset_project():
+def reset_project(reset_clocks=10):
     tt = DemoBoard.get()
+
+    # Record whether project is currently being clocked, stop the clock if so
+    hz = tt.auto_clocking_freq
+    if hz > 0:
+        tt.clock_project_stop()
+
+    # Reset and clock several times while in reset
     tt.reset_project(True)
+    manual_clock(reset_clocks)
+
+    # Do not have the clock running when bringing the project out of reset, 
+    # to avoid synchronization issues.
     tt.reset_project(False)
 
     report("tt.reset_project", 1)
 
+    # Restart the clock if it was previously running
+    if hz > 0:
+        set_clock_hz(hz)
 
 def set_clock_hz(hz):
     tt = DemoBoard.get()
