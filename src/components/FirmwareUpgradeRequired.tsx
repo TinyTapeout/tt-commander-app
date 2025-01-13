@@ -16,10 +16,17 @@ export function FirmwareUpgradeRequired(props: IFirmwareUpgradeRequiredProps) {
         <Typography component="h2" variant="h5" marginBottom={2}>
           Firmware upgrade required!
         </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Your Tiny Tapeout board requires a firmware upgrade to use this application. Upgrade
-          instructions:{' '}
+        <Typography variant="body2" color="text.secondary" marginBottom={1}>
+          Your Tiny Tapeout board requires a firmware upgrade to use this application.
         </Typography>
+        <Typography variant="body2" marginBottom={1}>
+          <strong>Important:</strong> the firmware upgrade will <strong>erase</strong> any existing
+          data on the board, including modifications to config.ini and any saved files.
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Upgrade instructions:
+        </Typography>
+
         <List sx={{ listStyle: 'decimal', pl: 4 }}>
           <ListItem sx={{ display: '' }}>
             <ListItemText>
