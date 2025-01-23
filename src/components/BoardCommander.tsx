@@ -3,6 +3,11 @@
 
 import { Button, ButtonGroup, Link, Paper, Stack, Typography } from '@suid/material';
 import { Show, createSignal } from 'solid-js';
+import {
+  firmwareDownloadURL,
+  isLatestFirmwareVersion,
+  latestFirmwareVersion,
+} from '~/model/firmware';
 import { TTBoardDevice } from '~/ttcontrol/TTBoardDevice';
 import { BoardConfigPanel } from './BoardConfigPanel';
 import { DebugLogs } from './DebugLogs';
@@ -48,6 +53,22 @@ export function BoardCommander(props: IBreakoutControlProps) {
           </Typography>
           <Typography>
             Firmware: <strong>{props.device.data.version ?? '<unknown>'}</strong>
+            <Show when={!isLatestFirmwareVersion(props.device.data.version ?? '')}>
+              <Link
+                sx={{
+                  marginLeft: 1,
+                  color: 'white',
+                  background: '#f44336',
+                  textDecoration: 'none',
+                  padding: 1,
+                }}
+                href={firmwareDownloadURL(latestFirmwareVersion)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Upgrade available
+              </Link>
+            </Show>
           </Typography>
         </Stack>
         <Button onClick={disconnect} variant="outlined">

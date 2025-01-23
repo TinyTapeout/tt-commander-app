@@ -84,3 +84,7 @@ export function compareVersions(a: string, b: string) {
   }
   return 0;
 }
+
+export function isLatestFirmwareVersion(version: string) {
+  return version && version !== 'unknown' && compareVersions(version, latestFirmwareVersion) >= 0;
+}
