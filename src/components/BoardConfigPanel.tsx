@@ -12,6 +12,7 @@ import {
 import { For, Show } from 'solid-js';
 import { deviceState, updateDeviceState } from '~/model/DeviceState';
 import { isFactoryMode } from '~/model/factory';
+import { compareVersions } from '~/model/firmware';
 import { shuttle } from '~/model/shuttle';
 import { TTBoardDevice, frequencyTable } from '~/ttcontrol/TTBoardDevice';
 import { ProjectSelect } from './ProjectSelect';
@@ -21,6 +22,8 @@ export interface IBoardConfigPanelProps {
 }
 
 export function BoardConfigPanel(props: IBoardConfigPanelProps) {
+  const maxClockFreq = () =>
+    compareVersions(props.device.data.version ?? '0.0.0', '2.0.4') >= 0 ? 100_000_000 : 66_500_000;
   const setClock = () => {
     void props.device.setClock(deviceState.clockHz);
   };
@@ -126,12 +129,12 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
 
       <Stack direction="row" spacing={1} marginBottom={1}>
         <TextField
-          sx={{ maxWidth: 120 }}
+          sx={{ maxWidth: 132 }}
           label="Clock speed (Hz)"
           type="number"
           size="small"
           value={deviceState.clockHz}
-          InputProps={{ inputProps: { min: 0, max: 66500000 } }}
+          InputProps={{ inputProps: { min: 0, max: maxClockFreq() } }}
           fullWidth
           onChange={(e) =>
             updateDeviceState({ clockHz: (e.target as HTMLInputElement).valueAsNumber })
@@ -150,7 +153,7 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
             fullWidth
             onChange={(e) => e.target.value && updateDeviceState({ clockHz: e.target.value })}
           >
-            <For each={frequencyTable}>
+            <For each={frequencyTable.filter((item) => parseInt(item.value, 10) <= maxClockFreq())}>
               {(freq) => <MenuItem value={freq.value}>{freq.title}</MenuItem>}
             </For>
           </Select>

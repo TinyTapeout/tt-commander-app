@@ -8,6 +8,8 @@ import { LineBreakTransformer } from '~/utils/LineBreakTransformer';
 import ttControl from './ttcontrol.py?raw';
 
 export const frequencyTable = [
+  { title: '100 MHz', value: '100000000' },
+  { title: '75 MHz', value: '75000000' },
   { title: '50 MHz', value: '50000000' },
   { title: '48 MHz', value: '48000000' },
   { title: '40 MHz', value: '40000000' },

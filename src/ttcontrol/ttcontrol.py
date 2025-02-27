@@ -104,7 +104,7 @@ def reset_project(reset_clocks=10):
     tt.reset_project(True)
     manual_clock(reset_clocks)
 
-    # Do not have the clock running when bringing the project out of reset, 
+    # Do not have the clock running when bringing the project out of reset,
     # to avoid synchronization issues.
     tt.reset_project(False)
 
@@ -117,7 +117,10 @@ def reset_project(reset_clocks=10):
 def set_clock_hz(hz):
     tt = DemoBoard.get()
     if hz > 0:
-        tt.clock_project_PWM(hz)
+        if sdk_version >= "2.0.4":
+            tt.clock_project_PWM(hz, max_rp2040_freq=200_000_000)
+        else:
+            tt.clock_project_PWM(hz)
         reportfreq = tt.auto_clocking_freq
     else:
         tt.clock_project_stop()
