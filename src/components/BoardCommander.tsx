@@ -53,7 +53,11 @@ export function BoardCommander(props: IBreakoutControlProps) {
           </Typography>
           <Typography>
             Firmware: <strong>{props.device.data.version ?? '<unknown>'}</strong>
-            <Show when={!isLatestFirmwareVersion(props.device.data.version ?? '')}>
+            <Show
+              when={
+                props.device.data.version && !isLatestFirmwareVersion(props.device.data.version)
+              }
+            >
               <Link
                 sx={{
                   marginLeft: 1,
