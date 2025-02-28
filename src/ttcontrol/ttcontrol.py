@@ -114,11 +114,11 @@ def reset_project(reset_clocks=10):
     if hz > 0:
         set_clock_hz(hz)
 
-def set_clock_hz(hz):
+def set_clock_hz(hz, max_rp2040_freq = None):
     tt = DemoBoard.get()
     if hz > 0:
-        if sdk_version >= "2.0.4":
-            tt.clock_project_PWM(hz, max_rp2040_freq=200_000_000)
+        if max_rp2040_freq:
+            tt.clock_project_PWM(hz, max_rp2040_freq=max_rp2040_freq)
         else:
             tt.clock_project_PWM(hz)
         reportfreq = tt.auto_clocking_freq

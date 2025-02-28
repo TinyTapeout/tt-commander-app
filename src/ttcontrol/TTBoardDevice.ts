@@ -6,6 +6,7 @@ import { updateDeviceState } from '~/model/DeviceState';
 import { loadShuttle } from '~/model/shuttle';
 import { LineBreakTransformer } from '~/utils/LineBreakTransformer';
 import ttControl from './ttcontrol.py?raw';
+import { compareVersions } from '~/model/firmware';
 
 export const frequencyTable = [
   { title: '100 MHz', value: '100000000' },
@@ -88,7 +89,11 @@ export class TTBoardDevice extends EventTarget {
   }
 
   async setClock(hz: number) {
-    await this.sendCommand(`set_clock_hz(${hz})`);
+    let freqArg = '';
+    if (this.data.version && compareVersions(this.data.version, '2.0.4') >= 0) {
+      freqArg = `, max_rp2040_freq=200_000_000`;
+    }
+    await this.sendCommand(`set_clock_hz(${hz}${freqArg})`);
   }
 
   async writeConfig(design: string, clock: number) {
