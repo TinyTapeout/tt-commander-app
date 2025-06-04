@@ -1,4 +1,11 @@
-import { Error, FactCheck, PrecisionManufacturing, Save, Warning } from '@suid/icons-material';
+import {
+  Error,
+  FactCheck,
+  Info,
+  PrecisionManufacturing,
+  Save,
+  Warning,
+} from '@suid/icons-material';
 import {
   Button,
   FormControl,
@@ -7,7 +14,6 @@ import {
   Select,
   Stack,
   TextField,
-  Typography,
 } from '@suid/material';
 import { For, Show } from 'solid-js';
 import { deviceState, updateDeviceState } from '~/model/DeviceState';
@@ -15,6 +21,7 @@ import { isFactoryMode } from '~/model/factory';
 import { compareVersions } from '~/model/firmware';
 import { shuttle } from '~/model/shuttle';
 import { TTBoardDevice, frequencyTable } from '~/ttcontrol/TTBoardDevice';
+import { GitHubIcon } from './GitHubIcon';
 import { ProjectSelect } from './ProjectSelect';
 
 export interface IBoardConfigPanelProps {
@@ -49,18 +56,15 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
     );
   };
 
-  const repo = () => {
-    const project = shuttle.projects.find((p) => p.address === deviceState.selectedDesign);
-    return project
-      ? { url: project.repo, commitUrl: `${project.repo}/tree/${project.commit}` }
-      : null;
-  };
-
-  const reportFeedbackUrl = () => {
+  const projectLinks = () => {
     const project = selectedProject();
-    if (project) {
-      return `https://app.tinytapeout.com/shuttles/${shuttle.id}/${project.macro}/feedback`;
-    }
+    return project
+      ? {
+          repo: `${project.repo}/tree/${project.commit}`,
+          docs: `https://tinytapeout.com/runs/${shuttle.id}/${project.macro}`,
+          feedback: `https://app.tinytapeout.com/shuttles/${shuttle.id}/${project.macro}/feedback`,
+        }
+      : null;
   };
 
   return (
@@ -183,30 +187,32 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
         </Show>
       </Stack>
 
-      <Show when={repo()}>
-        {(repo) => (
-          <Typography>
-            Repo:{' '}
-            <a href={repo().commitUrl} target="_blank">
-              {repo().url}
-            </a>
-          </Typography>
+      <Show when={projectLinks()}>
+        {(projectLinks) => (
+          <Stack my={1} direction="row" spacing={1}>
+            <Button
+              component="a"
+              sx={{ backgroundColor: 'yellow' }}
+              href={projectLinks().feedback}
+              target="_blank"
+              variant="outlined"
+              startIcon={<FactCheck />}
+            >
+              Report results
+            </Button>
+            <Button component="a" startIcon={<Info />} href={projectLinks().docs} target="_blank">
+              Project docs
+            </Button>
+            <Button
+              component="a"
+              startIcon={<GitHubIcon />}
+              href={projectLinks().repo}
+              target="_blank"
+            >
+              Repo
+            </Button>
+          </Stack>
         )}
-      </Show>
-
-      <Show when={reportFeedbackUrl()}>
-        <Stack my={1} direction="row" spacing={1}>
-          <Button
-            component="a"
-            sx={{ backgroundColor: 'yellow' }}
-            href={reportFeedbackUrl()}
-            target="_blank"
-            variant="outlined"
-            startIcon={<FactCheck />}
-          >
-            Report results
-          </Button>
-        </Stack>
       </Show>
     </>
   );
