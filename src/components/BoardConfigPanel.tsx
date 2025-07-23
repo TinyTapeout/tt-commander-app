@@ -61,7 +61,7 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
     return project
       ? {
           repo: `${project.repo}/tree/${project.commit}`,
-          docs: `https://tinytapeout.com/runs/${shuttle.id}/${project.macro}`,
+          docs: `https://tinytapeout.com/chips/${shuttle.id}/${project.macro}`,
           feedback: `https://app.tinytapeout.com/shuttles/${shuttle.id}/${project.macro}/feedback`,
         }
       : null;
