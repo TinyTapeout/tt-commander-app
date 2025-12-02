@@ -32,7 +32,7 @@ export function BoardCommander(props: IBreakoutControlProps) {
   const shuttleUrl = () => {
     const id = shuttleId();
     if (id?.startsWith('tt') && id.length === 4) {
-      return `https://tinytapeout.com/${id}`;
+      return `https://tinytapeout.com/chips/${id}/`;
     }
   };
 
