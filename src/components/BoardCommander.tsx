@@ -31,7 +31,7 @@ export function BoardCommander(props: IBreakoutControlProps) {
   const shuttleId = () => props.device.data.shuttle;
   const shuttleUrl = () => {
     const id = shuttleId();
-    if (id?.startsWith('tt') && id.length === 4) {
+    if (id?.startsWith('tt') && id.length >= 4) {
       return `https://tinytapeout.com/chips/${id}/`;
     }
   };
