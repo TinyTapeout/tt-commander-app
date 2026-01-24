@@ -3,10 +3,10 @@
 
 import { createStore } from 'solid-js/store';
 import { updateDeviceState } from '~/model/DeviceState';
+import { compareVersions } from '~/model/firmware';
 import { loadShuttle } from '~/model/shuttle';
 import { LineBreakTransformer } from '~/utils/LineBreakTransformer';
 import ttControl from './ttcontrol.py?raw';
-import { compareVersions } from '~/model/firmware';
 
 export const frequencyTable = [
   { title: '100 MHz', value: '100000000' },
