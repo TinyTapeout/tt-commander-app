@@ -44,6 +44,15 @@ export function ReplPanel(props: IReplPanelProps) {
       <Typography marginTop={0.5}>
         REPL tip: use <strong>Ctrl+E</strong> to enter paste mode, <strong>Ctrl+Shift+V</strong> to
         paste.
+        <br />
+        See the{' '}
+        <a
+          href="https://github.com/TinyTapeout/tt-micropython-firmware?tab=readme-ov-file#quick-start"
+          target="_blank"
+        >
+          SDK documentation
+        </a>{' '}
+        for reference.
       </Typography>
     </Stack>
   );
