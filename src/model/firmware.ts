@@ -1,8 +1,29 @@
 export const minimumFirmwareVersion = '2.0.0RC2';
-export const latestFirmwareVersion = '2.0.4';
+
+export const latestFirmwareVersions: Record<string, string> = {
+  rp2040: '2.0.4',
+  rp2350: '3.0.0',
+};
+
+function chipForMajorVersion(major: number) {
+  return major >= 3 ? 'rp2350' : 'rp2040';
+}
+
+function chipForVersion(version: string) {
+  return chipForMajorVersion(parseFirmwareVersion(version).major);
+}
+
+export function latestFirmwareVersionForDevice(version: string) {
+  return latestFirmwareVersions[chipForVersion(version)];
+}
 
 export function firmwareDownloadURL(version: string) {
-  return `https://github.com/TinyTapeout/tt-micropython-firmware/releases/download/v${version}/tt-demo-rp2040-v${version}.uf2`;
+  const chip = chipForVersion(version);
+  return `https://github.com/TinyTapeout/tt-micropython-firmware/releases/download/v${version}/tt-demo-${chip}-v${version}.uf2`;
+}
+
+export function latestFirmwareDownloadURL(deviceVersion: string) {
+  return firmwareDownloadURL(latestFirmwareVersionForDevice(deviceVersion));
 }
 
 /**
@@ -86,5 +107,7 @@ export function compareVersions(a: string, b: string) {
 }
 
 export function isLatestFirmwareVersion(version: string) {
-  return version && version !== 'unknown' && compareVersions(version, latestFirmwareVersion) >= 0;
+  if (!version || version === 'unknown') return false;
+  const latest = latestFirmwareVersionForDevice(version);
+  return compareVersions(version, latest) >= 0;
 }

@@ -3,7 +3,7 @@
 
 import { createStore } from 'solid-js/store';
 import { updateDeviceState } from '~/model/DeviceState';
-import { compareVersions } from '~/model/firmware';
+import { compareVersions, parseFirmwareVersion } from '~/model/firmware';
 import { loadShuttle } from '~/model/shuttle';
 import { LineBreakTransformer } from '~/utils/LineBreakTransformer';
 import ttControl from './ttcontrol.py?raw';
@@ -91,7 +91,11 @@ export class TTBoardDevice extends EventTarget {
 
   async setClock(hz: number) {
     let freqArg = '';
-    if (this.data.version && compareVersions(this.data.version, '2.0.4') >= 0) {
+    if (
+      this.data.version &&
+      compareVersions(this.data.version, '2.0.4') >= 0 &&
+      parseFirmwareVersion(this.data.version).major === 2
+    ) {
       freqArg = `, max_rp2040_freq=200_000_000`;
     }
     await this.sendCommand(`set_clock_hz(${hz}${freqArg})`);

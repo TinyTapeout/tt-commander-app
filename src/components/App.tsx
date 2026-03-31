@@ -20,7 +20,7 @@ export function App() {
   const [breakoutDevice, setBreakoutDevice] = createSignal<TTBoardDevice | null>(null);
   const [connecting, setConnecting] = createSignal(false);
   const [connectError, setConnectError] = createSignal<Error | null>(null);
-  const [firmwareUpdateRequired, setFirmwareUpdateRequired] = createSignal(false);
+  const [firmwareUpdateRequired, setFirmwareUpdateRequired] = createSignal<string | false>(false);
   const [unsupportedVersion, setUnsupportedVersion] = createSignal<string | null>(null);
 
   const connect = async () => {
@@ -54,14 +54,14 @@ export function App() {
   createEffect(() => {
     const device = breakoutDevice();
     if (device?.data.version) {
-      let value = false;
+      let outdated = false;
       try {
-        value = compareVersions(device.data.version, minimumFirmwareVersion) < 0;
+        outdated = compareVersions(device.data.version, minimumFirmwareVersion) < 0;
       } catch (e) {
         setUnsupportedVersion(device.data.version);
       }
-      setFirmwareUpdateRequired(value);
-      if (value) {
+      setFirmwareUpdateRequired(outdated ? device.data.version : false);
+      if (outdated) {
         console.warn('Detected outdated firmware version:', device.data.version);
         console.warn('Minimum required version:', minimumFirmwareVersion);
       }
@@ -107,9 +107,14 @@ export function App() {
           </Show>
 
           <Show when={firmwareUpdateRequired()}>
-            <Stack mt={2}>
-              <FirmwareUpgradeRequired device={breakoutDevice() ?? undefined} />
-            </Stack>
+            {(version) => (
+              <Stack mt={2}>
+                <FirmwareUpgradeRequired
+                  device={breakoutDevice() ?? undefined}
+                  version={version()}
+                />
+              </Stack>
+            )}
           </Show>
 
           <Show when={unsupportedVersion()}>

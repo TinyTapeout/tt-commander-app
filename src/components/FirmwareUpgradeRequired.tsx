@@ -1,15 +1,16 @@
 import { Box, Button, List, ListItem, ListItemText, Paper, Typography } from '@suid/material';
-import { firmwareDownloadURL, latestFirmwareVersion } from '~/model/firmware';
+import { latestFirmwareDownloadURL } from '~/model/firmware';
 import { type TTBoardDevice } from '~/ttcontrol/TTBoardDevice';
 
 export interface IFirmwareUpgradeRequiredProps {
   device?: TTBoardDevice;
+  version: string;
 }
 
-const latestFirmwareUrl = firmwareDownloadURL(latestFirmwareVersion);
-const firmwareFilename = new URL(latestFirmwareUrl).pathname.split('/').pop();
-
 export function FirmwareUpgradeRequired(props: IFirmwareUpgradeRequiredProps) {
+  const firmwareUrl = () => latestFirmwareDownloadURL(props.version);
+  const firmwareFilename = () => new URL(firmwareUrl()).pathname.split('/').pop();
+
   return (
     <Paper sx={{ padding: 1, backgroundColor: 'warning.light' }}>
       <Paper sx={{ padding: 2 }} elevation={0}>
@@ -31,8 +32,8 @@ export function FirmwareUpgradeRequired(props: IFirmwareUpgradeRequiredProps) {
           <ListItem sx={{ display: '' }}>
             <ListItemText>
               Download the latest firmware:{' '}
-              <a href={latestFirmwareUrl} target="_blank">
-                {firmwareFilename}
+              <a href={firmwareUrl()} target="_blank">
+                {firmwareFilename()}
               </a>
               .
             </ListItemText>

@@ -3,11 +3,7 @@
 
 import { Button, ButtonGroup, Link, Paper, Stack, Typography } from '@suid/material';
 import { Show, createSignal } from 'solid-js';
-import {
-  firmwareDownloadURL,
-  isLatestFirmwareVersion,
-  latestFirmwareVersion,
-} from '~/model/firmware';
+import { isLatestFirmwareVersion, latestFirmwareDownloadURL } from '~/model/firmware';
 import { TTBoardDevice } from '~/ttcontrol/TTBoardDevice';
 import { BoardConfigPanel } from './BoardConfigPanel';
 import { DebugLogs } from './DebugLogs';
@@ -66,7 +62,7 @@ export function BoardCommander(props: IBreakoutControlProps) {
                   textDecoration: 'none',
                   padding: 1,
                 }}
-                href={firmwareDownloadURL(latestFirmwareVersion)}
+                href={latestFirmwareDownloadURL(props.device.data.version!)}
                 target="_blank"
                 rel="noopener noreferrer"
               >
