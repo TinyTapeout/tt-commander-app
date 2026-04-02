@@ -164,6 +164,9 @@ def run_factory_test():
         print(f"error=factory_test_clocking, {err}")
     else:
         print("factory_test=OK")
+        
+    # if we're doing factory test, we want this into manual input mode
+    enable_ui_in(False)
 
 
 def start_monitoring(io, frequency):
