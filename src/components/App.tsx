@@ -14,6 +14,7 @@ import { FirmwareUpgradeRequired } from './FirmwareUpgradeRequired';
 import { Footer } from './Footer';
 import { Header } from './Header';
 import { LoadingButton } from './LoadingButton';
+import { UARTPanel } from './UARTPanel';
 
 export function App() {
   const [supported, setSupported] = createSignal(false);
