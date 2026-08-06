@@ -87,8 +87,8 @@ export function App() {
           <Show when={!supported()}>
             <Stack mt={2}>
               <Typography variant="body1" color="error">
-                Your browser does not support the Web Serial API. You can use Chrome, Edge, or Opera
-                to connect to the breakout board from this page.
+                Your browser does not support the Web Serial API. You can use Chrome, Edge, Opera,
+                or Firefox 151+ to connect to the breakout board from this page.
               </Typography>
             </Stack>
           </Show>
