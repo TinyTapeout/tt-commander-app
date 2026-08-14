@@ -4,7 +4,7 @@
 import { createStore } from 'solid-js/store';
 import { updateDeviceState } from '~/model/DeviceState';
 import { compareVersions, parseFirmwareVersion } from '~/model/firmware';
-import { loadShuttle } from '~/model/shuttle';
+import { DesignAddress, formatDesignAddress, loadShuttle } from '~/model/shuttle';
 import { LineBreakTransformer } from '~/utils/LineBreakTransformer';
 import ttControl from './ttcontrol.py?raw';
 
@@ -93,9 +93,13 @@ export class TTBoardDevice extends EventTarget {
     await this.sendCommand('dump_state()');
   }
 
-  async selectDesign(index: number, clockHz?: number) {
+  async selectDesign(design: DesignAddress, clockHz?: number) {
     const clockArg = clockHz != null ? `, ${clockHz}` : '';
-    await this.sendCommand(`select_design(${index}${clockArg})`);
+    // Subtile projects share their group's mux address, and are selected by the
+    // "<address>-<subtile>" string form (firmware 3.1.0 and above).
+    const designArg =
+      design.subtile != null ? `"${formatDesignAddress(design)}"` : `${design.address}`;
+    await this.sendCommand(`select_design(${designArg}${clockArg})`);
   }
 
   async setClock(hz: number) {
@@ -193,6 +197,13 @@ export class TTBoardDevice extends EventTarget {
       case 'tt.design':
         updateDeviceState({ selectedDesign: parseInt(value, 10) });
         break;
+
+      case 'tt.subtile': {
+        // Reported as -1 (or NaN on a mangled line) when the design isn't a subtile.
+        const subtile = parseInt(value, 10);
+        updateDeviceState({ selectedSubtile: subtile >= 0 ? subtile : null });
+        break;
+      }
 
       case 'tt.clk_freq':
         updateDeviceState({ clockHz: parseInt(value, 10) });

@@ -7,10 +7,10 @@ import {
   TableRow,
   Typography,
 } from '@suid/material';
-import { For, Show, createResource } from 'solid-js';
-import { deviceState } from '~/model/DeviceState';
+import { createResource, For, Show } from 'solid-js';
+import { selectedDesignAddress } from '~/model/DeviceState';
 import { compareVersions } from '~/model/firmware';
-import { Project, shuttle } from '~/model/shuttle';
+import { findProject, Project, shuttle } from '~/model/shuttle';
 import { TTBoardDevice } from '~/ttcontrol/TTBoardDevice';
 import { AnalogPinoutTable } from './AnalogPinoutTable';
 
@@ -29,8 +29,7 @@ export interface IPinoutPanelProps {
 }
 
 export function PinoutPanel(props: IPinoutPanelProps) {
-  const selectedProject = () =>
-    shuttle.projects.find((p) => p.address === deviceState.selectedDesign);
+  const selectedProject = () => findProject(shuttle.projects, selectedDesignAddress());
 
   const [projectInfo] = createResource(async () => {
     const project = selectedProject();
@@ -89,6 +88,12 @@ export function PinoutPanel(props: IPinoutPanelProps) {
           </TableBody>
         </Show>
       </Table>
+      <Show when={selectedProject()?.type === 'subtile'}>
+        <Typography variant="body2" color="textSecondary" marginTop={1}>
+          Subtile project: the bidirectional (uio) pins select the active subtile, and are not
+          available to the project.
+        </Typography>
+      </Show>
       <Show when={projectInfo()?.analog_pins.length}>
         <Typography variant="h6" marginTop={4}>
           Analog pins

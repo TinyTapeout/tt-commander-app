@@ -72,12 +72,16 @@ def dump_state():
     global _tt_timers
     tt = DemoBoard.get()
     design = 0
+    subtile = -1  # -1 means "the enabled design is not a subtile"
     if tt.shuttle.enabled is not None:
         design = tt.shuttle.enabled.project_index
+        if getattr(tt.shuttle.enabled, "subtile_bits", 0):
+            subtile = tt.shuttle.enabled.subtile_address
 
     hz = tt.auto_clocking_freq
     vals = {
         "tt.design": design,
+        "tt.subtile": subtile,
         "tt.clk_freq": hz,
         "tt.mode": tt.mode_str,
     }

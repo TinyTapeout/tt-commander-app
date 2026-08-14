@@ -11,15 +11,15 @@ import {
 } from '@suid/material';
 import createElementRef from '@suid/system/createElementRef';
 import { createSelect, fuzzyHighlight, fuzzySearch } from '@thisbeyond/solid-select';
-import { For, Show, createEffect } from 'solid-js';
-import { Project } from '~/model/shuttle';
+import { createEffect, For, Show } from 'solid-js';
+import { formatDesignAddress, Project, projectAddress } from '~/model/shuttle';
 import { fuzzySort } from '~/utils/fuzzySort';
 import { Popper } from './Popper';
 
 export interface IProjectSelectProps {
-  selectedAddr: number;
+  selected?: Project;
   projects: Project[];
-  onSelect: (address: number) => void;
+  onSelect: (project: Project) => void;
 }
 
 export function ProjectListItem(props: { project: Project; search: string }) {
@@ -37,7 +37,9 @@ export function ProjectListItem(props: { project: Project; search: string }) {
 
   return (
     <Stack direction="row" spacing={2} maxWidth={'400px'}>
-      <code style={{ 'min-width': '32px', 'text-align': 'right' }}>{props.project.address}</code>
+      <code style={{ 'min-width': '32px', 'text-align': 'right', 'white-space': 'nowrap' }}>
+        {formatDesignAddress(projectAddress(props.project))}
+      </code>
       <Stack flex={1}>
         <Typography flex={1} minWidth="100%" whiteSpace="pre-wrap">
           {title()}
@@ -78,8 +80,6 @@ export function ProjectListItem(props: { project: Project; search: string }) {
 }
 
 export function ProjectSelect(props: IProjectSelectProps) {
-  const selectedProject = () => props.projects.find((x) => x.address === props.selectedAddr);
-
   const select = createSelect({
     options: (inputValue: string) => {
       if (!inputValue) {
@@ -88,13 +88,13 @@ export function ProjectSelect(props: IProjectSelectProps) {
 
       return fuzzySort(inputValue, props.projects, ['title', 'author']).map((x) => x.item);
     },
-    onChange: (value) => value && props.onSelect(value.address),
+    onChange: (value) => value && props.onSelect(value),
   });
 
   const fieldRef = createElementRef();
 
   createEffect(() => {
-    select.setValue(selectedProject());
+    select.setValue(props.selected);
     select.setInputValue('');
   });
 

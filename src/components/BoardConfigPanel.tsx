@@ -17,11 +17,18 @@ import {
   TextField,
 } from '@suid/material';
 import { For, Show } from 'solid-js';
-import { deviceState, updateDeviceState } from '~/model/DeviceState';
+import { deviceState, selectedDesignAddress, updateDeviceState } from '~/model/DeviceState';
 import { isFactoryMode } from '~/model/factory';
-import { compareVersions } from '~/model/firmware';
-import { shuttle } from '~/model/shuttle';
-import { TTBoardDevice, frequencyTable } from '~/ttcontrol/TTBoardDevice';
+import { compareVersions, subtileFirmwareVersion } from '~/model/firmware';
+import {
+  DesignAddress,
+  findProject,
+  formatDesignAddress,
+  Project,
+  projectAddress,
+  shuttle,
+} from '~/model/shuttle';
+import { frequencyTable, TTBoardDevice } from '~/ttcontrol/TTBoardDevice';
 import { GitHubIcon } from './GitHubIcon';
 import { ProjectSelect } from './ProjectSelect';
 
@@ -36,23 +43,46 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
     void props.device.setClock(deviceState.clockHz);
   };
 
-  const selectedProject = () =>
-    shuttle.projects.find((p) => p.address === deviceState.selectedDesign);
+  const selectedProject = () => findProject(shuttle.projects, selectedDesignAddress());
 
   const dangerLevel = () => selectedProject()?.danger_level;
   const dangerReason = () => selectedProject()?.danger_reason;
 
-  const setSelectedAddress = (address: number) => {
-    updateDeviceState({ selectedDesign: address });
-    const project = shuttle.projects.find((p) => p.address === address);
+  const subtileSelected = () => deviceState.selectedSubtile != null;
+  const subtileUnsupported = () =>
+    subtileSelected() &&
+    compareVersions(props.device.data.version ?? '0.0.0', subtileFirmwareVersion) < 0;
+
+  const selectDisabledReason = () =>
+    subtileUnsupported()
+      ? `Subtile projects require firmware ${subtileFirmwareVersion} or newer`
+      : dangerReason();
+
+  const setSelectedAddress = (design: DesignAddress) => {
+    updateDeviceState({ selectedDesign: design.address, selectedSubtile: design.subtile });
+    const project = findProject(shuttle.projects, design);
     if (project?.clock_hz) {
       updateDeviceState({ clockHz: project.clock_hz });
     }
   };
 
+  const setSelectedProject = (project: Project) => {
+    setSelectedAddress(projectAddress(project));
+  };
+
+  const setSelectedIndex = (address: number) => {
+    if (Number.isNaN(address)) {
+      return;
+    }
+    // A group tile can't be enabled on its own, so its address selects the first subtile in it.
+    const subtiles = shuttle.projects.filter((p) => p.type === 'subtile' && p.address === address);
+    const subtile = subtiles.length ? Math.min(...subtiles.map((p) => p.subtile_addr ?? 0)) : null;
+    setSelectedAddress({ address, subtile });
+  };
+
   const writeConfigIni = () => {
     void props.device.writeConfig(
-      selectedProject()?.macro ?? deviceState.selectedDesign.toString(),
+      selectedProject()?.macro ?? formatDesignAddress(selectedDesignAddress()),
       deviceState.clockHz,
     );
   };
@@ -75,8 +105,8 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
           <Show when={!shuttle.loading}>
             <ProjectSelect
               projects={shuttle.projects}
-              selectedAddr={deviceState.selectedDesign}
-              onSelect={setSelectedAddress}
+              selected={selectedProject()}
+              onSelect={setSelectedProject}
             />
           </Show>
           <Show when={shuttle.loading}>
@@ -103,23 +133,38 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
           value={deviceState.selectedDesign}
           InputProps={{ inputProps: { min: 0, max: 1023 } }}
           fullWidth
-          onChange={(e) => setSelectedAddress((e.target as HTMLInputElement).valueAsNumber)}
+          onChange={(e) => setSelectedIndex((e.target as HTMLInputElement).valueAsNumber)}
         />
+        <Show when={subtileSelected()}>
+          <TextField
+            sx={{ maxWidth: 80 }}
+            label="Subtile"
+            size="small"
+            value={deviceState.selectedSubtile}
+            title="Index of the project within its group tile"
+            InputProps={{ readOnly: true }}
+            fullWidth
+          />
+        </Show>
         <Button
           onClick={() => {
             if (deviceState.uiIn.length > 0) {
               void props.device.writeUIIn(0);
               updateDeviceState({ uiIn: [] });
             }
-            const project = shuttle.projects.find((p) => p.address === deviceState.selectedDesign);
-            props.device.selectDesign(deviceState.selectedDesign, project?.clock_hz);
+            props.device.selectDesign(selectedDesignAddress(), selectedProject()?.clock_hz);
           }}
           variant="contained"
-          disabled={dangerLevel() === 'high'}
-          title={dangerReason()}
+          disabled={dangerLevel() === 'high' || subtileUnsupported()}
+          title={selectDisabledReason()}
         >
           Select
         </Button>
+        <Show when={subtileUnsupported() && dangerLevel() !== 'high'}>
+          <span title={selectDisabledReason()}>
+            <Error color="error" fontSize="large" sx={{ marginLeft: 0.5 }} />
+          </span>
+        </Show>
         <Show when={dangerLevel() === 'medium'}>
           <span title={dangerReason()}>
             <Warning color="warning" fontSize="large" sx={{ marginLeft: 0.5 }} />

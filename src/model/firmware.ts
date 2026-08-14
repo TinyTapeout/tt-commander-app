@@ -1,5 +1,8 @@
 export const minimumFirmwareVersion = '2.0.0RC2';
 
+/** First firmware version that can select subtile projects (`tt.shuttle['<address>-<subtile>']`). */
+export const subtileFirmwareVersion = '3.1.0';
+
 export const latestFirmwareVersions: Record<string, string> = {
   rp2040: '2.0.4',
   rp2350: '3.1.0',
