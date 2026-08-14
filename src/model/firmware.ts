@@ -2,7 +2,7 @@ export const minimumFirmwareVersion = '2.0.0RC2';
 
 export const latestFirmwareVersions: Record<string, string> = {
   rp2040: '2.0.4',
-  rp2350: '3.0.7',
+  rp2350: '3.1.0',
 };
 
 function chipForMajorVersion(major: number) {
