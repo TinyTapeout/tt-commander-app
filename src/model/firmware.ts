@@ -5,7 +5,7 @@ export const subtileFirmwareVersion = '3.1.0';
 
 export const latestFirmwareVersions: Record<string, string> = {
   rp2040: '2.0.4',
-  rp2350: '3.1.0',
+  rp2350: '3.1.1',
 };
 
 function chipForMajorVersion(major: number) {
