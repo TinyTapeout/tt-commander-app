@@ -5,6 +5,7 @@ import { createStore } from 'solid-js/store';
 import { updateDeviceState } from '~/model/DeviceState';
 import { compareVersions, parseFirmwareVersion } from '~/model/firmware';
 import { DesignAddress, formatDesignAddress, loadShuttle } from '~/model/shuttle';
+import { base64Decode, base64Encode } from '~/utils/base64';
 import { LineBreakTransformer } from '~/utils/LineBreakTransformer';
 import ttControl from './ttcontrol.py?raw';
 
@@ -41,7 +42,13 @@ export interface IFactoryTestState {
 
 export type TerminalListener = (data: string) => void;
 
+interface IResponseWaiter {
+  names: string[];
+  resolve: (response: { name: string; value: string }) => void;
+}
+
 const MAX_LOG_ENTRIES = 1000;
+const RESPONSE_TIMEOUT_MS = 10_000;
 
 export class TTBoardDevice extends EventTarget {
   private reader?: ReadableStreamDefaultReader<string>;
@@ -58,6 +65,7 @@ export class TTBoardDevice extends EventTarget {
 
   readonly data;
   private terminalListener: TerminalListener | null = null;
+  private responseWaiters: IResponseWaiter[] = [];
   private setData;
 
   constructor(readonly port: SerialPort) {
@@ -114,8 +122,44 @@ export class TTBoardDevice extends EventTarget {
     await this.sendCommand(`set_clock_hz(${hz}${freqArg})`);
   }
 
-  async writeConfig(design: string, clock: number) {
-    await this.sendCommand(`write_config(r"${design}", ${clock})`);
+  /**
+   * Resolves with the next `name=value` line reported by the board whose name is one of `names`.
+   * Call before sending the command that produces the response, so it can't be missed.
+   */
+  private expectResponse(names: string[]) {
+    return new Promise<{ name: string; value: string }>((resolve, reject) => {
+      const waiter: IResponseWaiter = {
+        names,
+        resolve: (response) => {
+          clearTimeout(timer);
+          resolve(response);
+        },
+      };
+      const timer = setTimeout(() => {
+        this.responseWaiters = this.responseWaiters.filter((w) => w !== waiter);
+        reject(new Error('Timed out waiting for a response from the board'));
+      }, RESPONSE_TIMEOUT_MS);
+      this.responseWaiters.push(waiter);
+    });
+  }
+
+  /** Reads config.ini from the board; empty if the board doesn't have one. */
+  async readConfigFile() {
+    const response = this.expectResponse(['tt.config_ini']);
+    await this.sendCommand('read_config()');
+    const { value } = await response;
+    return value === '-' ? '' : base64Decode(value);
+  }
+
+  /** Overwrites config.ini on the board, and verifies that it was written correctly. */
+  async writeConfigFile(content: string) {
+    const response = this.expectResponse(['tt.config_ini_written', 'tt.config_ini_error']);
+    this.addLogEntry({ text: '<<< write config.ini >>>', sent: true });
+    await this.sendCommand(`write_config("${base64Encode(content)}")`, false);
+    const { name, value } = await response;
+    if (name === 'tt.config_ini_error') {
+      throw new Error(`Failed to write config.ini: ${value}`);
+    }
   }
 
   async factorySetup() {
@@ -181,6 +225,13 @@ export class TTBoardDevice extends EventTarget {
     }
 
     const [name, value] = line.split(/=(.+)/);
+
+    const waiter = this.responseWaiters.find((w) => w.names.includes(name));
+    if (waiter) {
+      this.responseWaiters = this.responseWaiters.filter((w) => w !== waiter);
+      waiter.resolve({ name, value });
+    }
+
     switch (name) {
       case 'tt.sdk_version':
         this.setData('version', value.replace(/^release_v/, ''));
@@ -331,7 +382,12 @@ export class TTBoardDevice extends EventTarget {
     }
   }
 
-  async close() {
+  /** Soft-resets the board (so it boots with the current config.ini) and disconnects. */
+  async reboot() {
+    await this.close(true);
+  }
+
+  async close(reboot = false) {
     await this.reader?.cancel();
     await this.terminalReader?.cancel();
     await this.readableStreamClosed?.catch(() => {});
@@ -339,6 +395,9 @@ export class TTBoardDevice extends EventTarget {
     try {
       await this.stopAllMonitoring();
       await this.writer?.write('\x03\x03\x02'); // Stop any running code and exit the RAW REPL mode.
+      if (reboot) {
+        await this.writer?.write('\x04'); // Ctrl+D: soft reset.
+      }
     } catch (e) {
       console.warn('Failed to exit RAW REPL mode:', e);
     }

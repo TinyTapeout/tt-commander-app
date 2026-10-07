@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # Copyright (C) 2024-2026, Tiny Tapeout LTD
 
+import binascii
 import os
 import sys
 import machine
@@ -157,6 +158,35 @@ def read_rom():
         report(tt.chip_ROM.contents)
     else:
         report({"shuttle": shuttle, "repo": "SHUTTLE OVERRIDE"})
+
+
+CONFIG_INI = "config.ini"
+
+
+def read_config():
+    try:
+        with open(CONFIG_INI, "rb") as f:
+            data = f.read()
+    except OSError:  # no config.ini on the board
+        data = b""
+    # "-" stands for an empty file, as the app ignores lines with an empty value.
+    report("tt.config_ini", binascii.b2a_base64(data).decode().strip() or "-")
+
+
+def write_config(data_b64):
+    data = binascii.a2b_base64(data_b64)
+    try:
+        with open(CONFIG_INI, "wb") as f:
+            f.write(data)
+        with open(CONFIG_INI, "rb") as f:
+            readback = f.read()
+    except OSError as e:
+        report("tt.config_ini_error", str(e))
+        return
+    if readback != data:
+        report("tt.config_ini_error", "verification failed")
+        return
+    report("tt.config_ini_written", len(data))
 
 
 def run_factory_test():

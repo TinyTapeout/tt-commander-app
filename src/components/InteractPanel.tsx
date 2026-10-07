@@ -7,7 +7,7 @@ import {
   ToggleButtonGroup,
 } from '@suid/material';
 import { createSignal, onCleanup, onMount, Show } from 'solid-js';
-import { deviceState, updateDeviceState } from '~/model/DeviceState';
+import { deviceState, uiInValue, updateDeviceState } from '~/model/DeviceState';
 import { TTBoardDevice } from '~/ttcontrol/TTBoardDevice';
 import { InteractSettingsMenu } from './InteractSettingsMenu';
 
@@ -19,14 +19,7 @@ export function InteractPanel(props: IInteractPanelProps) {
   const [momentaryMode, setMomentaryMode] = createSignal(false);
 
   const updateUiIn = async (setEnableToTrue = false) => {
-    const values = deviceState.uiIn;
-    let uiIn = 0;
-    for (let i = 0; i < 8; i++) {
-      if (values.includes(i.toString())) {
-        uiIn |= 1 << i;
-      }
-    }
-    await props.device.writeUIIn(uiIn);
+    await props.device.writeUIIn(uiInValue());
     if (setEnableToTrue) {
       await props.device.enableUIIn(true);
     }

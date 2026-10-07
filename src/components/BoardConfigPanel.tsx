@@ -16,20 +16,20 @@ import {
   Stack,
   TextField,
 } from '@suid/material';
-import { For, Show } from 'solid-js';
-import { deviceState, selectedDesignAddress, updateDeviceState } from '~/model/DeviceState';
+import { createSignal, For, Show } from 'solid-js';
+import { DefaultProjectConfig } from '~/model/configIni';
+import {
+  deviceState,
+  selectedDesignAddress,
+  uiInValue,
+  updateDeviceState,
+} from '~/model/DeviceState';
 import { isFactoryMode } from '~/model/factory';
 import { compareVersions, subtileFirmwareVersion } from '~/model/firmware';
-import {
-  DesignAddress,
-  findProject,
-  formatDesignAddress,
-  Project,
-  projectAddress,
-  shuttle,
-} from '~/model/shuttle';
+import { DesignAddress, findProject, Project, projectAddress, shuttle } from '~/model/shuttle';
 import { frequencyTable, TTBoardDevice } from '~/ttcontrol/TTBoardDevice';
 import { GitHubIcon } from './GitHubIcon';
+import { MakeDefaultDialog } from './MakeDefaultDialog';
 import { ProjectSelect } from './ProjectSelect';
 
 export interface IBoardConfigPanelProps {
@@ -53,6 +53,7 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
     subtileSelected() &&
     compareVersions(props.device.data.version ?? '0.0.0', subtileFirmwareVersion) < 0;
 
+  const selectDisabled = () => dangerLevel() === 'high' || subtileUnsupported();
   const selectDisabledReason = () =>
     subtileUnsupported()
       ? `Subtile projects require firmware ${subtileFirmwareVersion} or newer`
@@ -80,11 +81,24 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
     setSelectedAddress({ address, subtile });
   };
 
-  const writeConfigIni = () => {
-    void props.device.writeConfig(
-      selectedProject()?.macro ?? formatDesignAddress(selectedDesignAddress()),
-      deviceState.clockHz,
-    );
+  const [makeDefault, setMakeDefault] = createSignal<{
+    project: Project;
+    config: DefaultProjectConfig;
+  } | null>(null);
+
+  const openMakeDefault = () => {
+    const project = selectedProject();
+    if (!project) {
+      return;
+    }
+    setMakeDefault({
+      project,
+      config: {
+        macro: project.macro,
+        clockHz: deviceState.clockHz,
+        uiIn: deviceState.uiInEnabled ? uiInValue() : null,
+      },
+    });
   };
 
   const projectLinks = () => {
@@ -155,7 +169,7 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
             props.device.selectDesign(selectedDesignAddress(), selectedProject()?.clock_hz);
           }}
           variant="contained"
-          disabled={dangerLevel() === 'high' || subtileUnsupported()}
+          disabled={selectDisabled()}
           title={selectDisabledReason()}
         >
           Select
@@ -215,10 +229,29 @@ export function BoardConfigPanel(props: IBoardConfigPanelProps) {
       </Stack>
 
       <Stack my={1} direction="row" spacing={1}>
-        <Show when={false}>
-          <Button onClick={writeConfigIni} variant="contained" startIcon={<Save />}>
-            Persist config to board
-          </Button>
+        <Button
+          onClick={openMakeDefault}
+          variant="contained"
+          startIcon={<Save />}
+          disabled={!selectedProject() || selectDisabled()}
+          title={
+            selectDisabledReason() ??
+            (selectedProject()
+              ? 'Load the selected project automatically when the board powers up'
+              : 'Select a project from the shuttle to make it the default')
+          }
+        >
+          Make default
+        </Button>
+        <Show when={makeDefault()}>
+          {(makeDefault) => (
+            <MakeDefaultDialog
+              device={props.device}
+              project={makeDefault().project}
+              config={makeDefault().config}
+              onClose={() => setMakeDefault(null)}
+            />
+          )}
         </Show>
 
         <Show when={isFactoryMode()}>

@@ -15,3 +15,12 @@ export const [deviceState, updateDeviceState] = createStore({
 export function selectedDesignAddress(): DesignAddress {
   return { address: deviceState.selectedDesign, subtile: deviceState.selectedSubtile };
 }
+
+/** The ui_in bits selected in the UI, packed into a byte. */
+export function uiInValue() {
+  let value = 0;
+  for (const bit of deviceState.uiIn) {
+    value |= 1 << parseInt(bit, 10);
+  }
+  return value;
+}
