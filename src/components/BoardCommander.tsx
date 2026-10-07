@@ -10,12 +10,13 @@ import { DebugLogs } from './DebugLogs';
 import { InteractPanel } from './InteractPanel';
 import { PinoutPanel } from './PinoutPanel';
 import { ReplPanel } from './ReplPanel';
+import { UARTPanel } from './UARTPanel';
 
 export interface IBreakoutControlProps {
   device: TTBoardDevice;
 }
 
-type ITabName = 'config' | 'interact' | 'pinout' | 'repl';
+type ITabName = 'config' | 'interact' | 'pinout' | 'repl' | 'uart';
 
 const dieVariantByCommit: Record<string, string> = {
   '7416232b': 'TTP2',
@@ -112,6 +113,12 @@ export function BoardCommander(props: IBreakoutControlProps) {
           >
             REPL
           </Button>
+          <Button
+            onClick={() => setActiveTab('uart')}
+            variant={activeTab() === 'uart' ? 'contained' : 'outlined'}
+          >
+            UART
+          </Button>
         </ButtonGroup>
         <Show when={activeTab() === 'config'}>
           <BoardConfigPanel device={props.device} />
@@ -124,6 +131,9 @@ export function BoardCommander(props: IBreakoutControlProps) {
         </Show>
         <Show when={activeTab() === 'repl'}>
           <ReplPanel device={props.device} />
+        </Show>
+        <Show when={activeTab() === 'uart'}>
+          <UARTPanel device={props.device} />
         </Show>
       </Paper>
 
